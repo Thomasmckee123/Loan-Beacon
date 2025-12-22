@@ -150,10 +150,6 @@ erDiagram
         string company "advisory firm name"
         enum role "admin, member, viewer"
         uuid team_id FK "nullable"
-        timestamp last_login_at
-        timestamp created_at
-        timestamp updated_at
-        timestamp deleted_at "soft delete"
     }
 
     teams {
@@ -218,9 +214,6 @@ erDiagram
         string linkedin_url "nullable"
         boolean is_primary "default false"
         text notes "nullable"
-        timestamp created_at
-        timestamp updated_at
-        timestamp deleted_at "soft delete"
     }
 
     notes {
