@@ -119,10 +119,3 @@ In the competitive world of debt advisory, **timing is everything**. Companies r
 - [ ] Advanced reporting and BI tools
 
 ---
-
-### Development Guidelines
-
-- **Code Style:** Follow ESLint and Prettier configurations
-- **Commits:** Use conventional commits (feat, fix, docs, etc.)
-- **Tests:** Maintain >80% code coverage
-- **Documentation:** Update relevant docs with your changes
