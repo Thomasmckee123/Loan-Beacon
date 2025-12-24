@@ -47,13 +47,13 @@ In the competitive world of debt advisory, **timing is everything**. Companies r
 
 ### 🎯 MUST Have (Launch Blockers)
 
-[ ] **Loan Maturity Database** - PostgreSQL schema with companies and loans
-[ ] **Company Profiles** - CRUD operations for company data
-[ ] **Timeline Tracking** - Visual calendar of maturity dates
-[ ] **Lead Alerts** - Email notifications for approaching deadlines
-[ ] **Search & Filter** - Advanced query functionality
-[ ] **User Authentication** - JWT-based auth system
-[ ] **Data Entry Interface** - Form for manual loan data input _(In Progress)_
+- [ ] **Loan Maturity Database** - PostgreSQL schema with companies and loans
+- [ ] **Company Profiles** - CRUD operations for company data
+- [ ] **Timeline Tracking** - Visual calendar of maturity dates
+- [ ] **Lead Alerts** - Email notifications for approaching deadlines
+- [ ] **Search & Filter** - Advanced query functionality
+- [ ] **User Authentication** - JWT-based auth system
+- [ ] **Data Entry Interface** - Form for manual loan data input _(In Progress)_
 
 ### ✅ SHOULD Have (High Priority)
 
