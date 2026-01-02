@@ -3,8 +3,9 @@ import { formatCurrency, formatDate, calculateDaysUntilMaturity } from '@/lib/ut
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-export default function CompanyDetailPage({ params }: { params: { id: string } }) {
-  const company = companies.find(c => c.id === params.id);
+export default async function CompanyDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const company = companies.find(c => c.id === id);
   
   if (!company) {
     notFound();
