@@ -9,7 +9,7 @@ export function formatCurrency(amount: number): string {
   } else if (amount >= 1_000) {
     return `$${(amount / 1_000).toFixed(1)}K`;
   } else {
-    return `$${amount.toLocaleString()}`;
+    return `$${amount?.toLocaleString()}`;
   }
 }
 
