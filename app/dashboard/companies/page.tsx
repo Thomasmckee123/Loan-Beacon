@@ -1,17 +1,50 @@
 'use client';
 
-import { useState } from 'react';
-import { companies, loans } from '@/data/dummyData';
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { getCompanies, getLoans } from '@/lib/supabase/queries';
+import { Company, Loan } from '@/lib/supabase/types';
 import { formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
 
 export default function CompaniesPage() {
+  const [companiesData, setCompaniesData] = useState<Company[]>([]);
+  const [loansData, setLoansData] = useState<Loan[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [industryFilter, setIndustryFilter] = useState('All');
+  const [loading, setLoading] = useState(true);
 
-  const industries = ['All', ...new Set(companies.map(c => c.industry))];
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const supabase = createClient();
+        const [companies, loans] = await Promise.all([
+          getCompanies(supabase),
+          getLoans(supabase),
+        ]);
+        setCompaniesData(companies);
+        setLoansData(loans);
+      } catch (error) {
+        console.error('Error fetching companies:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-  const filteredCompanies = companies.filter(company => {
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-navy-800"></div>
+      </div>
+    );
+  }
+
+  const industries = ['All', ...new Set(companiesData.map(c => c.industry))];
+
+  const filteredCompanies = companiesData.filter(company => {
     const matchesSearch = company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          company.location.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesIndustry = industryFilter === 'All' || company.industry === industryFilter;
@@ -19,7 +52,7 @@ export default function CompaniesPage() {
   });
 
   const getCompanyLoans = (companyId: string) => {
-    return loans.filter(loan => loan.companyId === companyId);
+    return loansData.filter(loan => loan.companyId === companyId);
   };
 
   return (
@@ -32,7 +65,7 @@ export default function CompaniesPage() {
         </div>
         <Link
           href="/dashboard/companies/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="bg-navy-800 text-white px-4 py-2 rounded-md hover:bg-navy-900 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2"
         >
           Add Company
         </Link>
@@ -51,7 +84,7 @@ export default function CompaniesPage() {
               placeholder="Search by name or location..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
             />
           </div>
           <div>
@@ -62,7 +95,7 @@ export default function CompaniesPage() {
               id="industry"
               value={industryFilter}
               onChange={(e) => setIndustryFilter(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
             >
               {industries.map(industry => (
                 <option key={industry} value={industry}>{industry}</option>
@@ -75,7 +108,7 @@ export default function CompaniesPage() {
       {/* Companies table */}
       <div className="bg-white shadow overflow-hidden rounded-lg">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+          <thead className="bg-navy-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Company
@@ -100,12 +133,12 @@ export default function CompaniesPage() {
               const totalLoanAmount = companyLoans.reduce((sum, loan) => sum + loan.amount, 0);
 
               return (
-                <tr key={company.id} className="hover:bg-gray-50">
+                <tr key={company.id} className="hover:bg-navy-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <Link
                         href={`/dashboard/companies/${company.id}`}
-                        className="text-sm font-medium text-blue-600 hover:text-blue-500"
+                        className="text-sm font-medium text-navy-700 hover:text-navy-600"
                       >
                         {company.name}
                       </Link>
@@ -113,7 +146,7 @@ export default function CompaniesPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-navy-100 text-navy-800">
                       {company.industry}
                     </span>
                   </td>

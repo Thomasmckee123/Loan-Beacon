@@ -1,10 +1,13 @@
 'use client';
 
-import { companies, loans, alerts } from '@/data/dummyData';
 import { formatCurrency, calculateDaysUntilMaturity } from '@/lib/utils';
+import { createClient } from '@/lib/supabase/client';
+import { getCompanies, getLoans, getAlerts } from '@/lib/supabase/queries';
+import { Company, Loan, Alert } from '@/lib/supabase/types';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { Building2, Banknote, Clock, DollarSign, AlertTriangle, ArrowRight, TrendingUp } from 'lucide-react';
 
 // Animated counter component
 function AnimatedCounter({ value, duration = 2000 }: { value: number; duration?: number }) {
@@ -50,6 +53,41 @@ const cardVariants = {
 };
 
 export default function DashboardPage() {
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [loans, setLoans] = useState<Loan[]>([]);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const supabase = createClient();
+        const [companiesData, loansData, alertsData] = await Promise.all([
+          getCompanies(supabase),
+          getLoans(supabase),
+          getAlerts(supabase),
+        ]);
+        setCompanies(companiesData);
+        setLoans(loansData);
+        setAlerts(alertsData);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-navy-800"></div>
+      </div>
+    );
+  }
+
   // Calculate stats
   const totalCompanies = companies.length;
   const activeLoans = loans.filter(loan => loan.status === 'Active').length;
@@ -93,7 +131,7 @@ export default function DashboardPage() {
         initial="hidden"
         animate="visible"
       >
-        <motion.div 
+        <motion.div
           className="bg-white p-6 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl cursor-pointer"
           variants={cardVariants}
           whileHover={{ scale: 1.02, y: -4 }}
@@ -101,20 +139,20 @@ export default function DashboardPage() {
         >
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-gray-600 rounded-md flex items-center justify-center">
-                <span className="text-white text-sm font-medium">🏢</span>
+              <div className="w-12 h-12 bg-blue-900 rounded-md flex items-center justify-center">
+                <Building2 className="w-6 h-6 text-amber-400" />
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Companies</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-blue-900">Total Companies</p>
+              <p className="text-2xl font-bold text-blue-900">
                 <AnimatedCounter value={totalCompanies} />
               </p>
             </div>
           </div>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           className="bg-white p-6 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl cursor-pointer"
           variants={cardVariants}
           whileHover={{ scale: 1.02, y: -4 }}
@@ -122,41 +160,41 @@ export default function DashboardPage() {
         >
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-gray-600 rounded-md flex items-center justify-center">
-                <span className="text-white text-sm font-medium">💰</span>
+              <div className="w-12 h-12 bg-blue-900 rounded-md flex items-center justify-center">
+                <Banknote className="w-6 h-6 text-amber-400" />
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Active Loans</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-blue-900">Active Loans</p>
+              <p className="text-2xl font-bold text-blue-900">
                 <AnimatedCounter value={activeLoans} />
               </p>
             </div>
           </div>
         </motion.div>
 
-        <motion.div 
-          className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl cursor-pointer border-l-4 border-red-600"
+        <motion.div
+          className="bg-gradient-to-br from-amber-50 to-amber-100 p-6 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl cursor-pointer border-l-4 border-amber-400"
           variants={cardVariants}
           whileHover={{ scale: 1.02, y: -4 }}
           transition={{ duration: 0.2 }}
         >
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-red-600 rounded-md flex items-center justify-center">
-                <span className="text-white text-sm font-medium">⏰</span>
+              <div className="w-12 h-12 bg-blue-900 rounded-md flex items-center justify-center">
+                <Clock className="w-6 h-6 text-amber-400" />
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-red-700">Upcoming (6 months)</p>
-              <p className="text-2xl font-bold text-red-800">
+              <p className="text-sm font-medium text-blue-900">Upcoming (6 months)</p>
+              <p className="text-2xl font-bold text-blue-900">
                 <AnimatedCounter value={upcomingLoans} />
               </p>
             </div>
           </div>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           className="bg-white p-6 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl cursor-pointer"
           variants={cardVariants}
           whileHover={{ scale: 1.02, y: -4 }}
@@ -164,13 +202,13 @@ export default function DashboardPage() {
         >
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-gray-600 rounded-md flex items-center justify-center">
-                <span className="text-white text-sm font-medium">💵</span>
+              <div className="w-12 h-12 bg-blue-900 rounded-md flex items-center justify-center">
+                <DollarSign className="w-6 h-6 text-amber-400" />
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Loan Value</p>
-              <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalLoanValue)}</p>
+              <p className="text-sm font-medium text-blue-900">Total Loan Value</p>
+              <p className="text-2xl font-bold text-blue-900">{formatCurrency(totalLoanValue)}</p>
             </div>
           </div>
         </motion.div>
@@ -191,10 +229,10 @@ export default function DashboardPage() {
         >
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium text-gray-900">Urgent Alerts</h2>
+              <h2 className="text-lg font-medium text-blue-900">Urgent Alerts</h2>
               <Link
                 href="/dashboard/alerts"
-                className="text-sm text-red-600 hover:text-red-500 transition-colors duration-200"
+                className="text-sm text-blue-700 hover:text-blue-600 transition-colors duration-200"
               >
                 View all
               </Link>
@@ -214,15 +252,15 @@ export default function DashboardPage() {
                   const company = companies.find(c => c.id === alert.companyId);
                   const priorityColors = {
                     Critical: 'bg-red-100 text-red-800',
-                    High: 'bg-orange-100 text-orange-800',
+                    High: 'bg-amber-100 text-amber-800',
                     Medium: 'bg-yellow-100 text-yellow-800',
                     Low: 'bg-green-100 text-green-800',
                   };
 
                   return (
-                    <motion.div 
-                      key={alert.id} 
-                      className="border-l-4 border-red-400 pl-4 hover:bg-red-50 p-3 rounded-r-lg transition-all duration-200 cursor-pointer"
+                    <motion.div
+                      key={alert.id}
+                      className="border-l-4 border-amber-400 pl-4 hover:bg-amber-50 p-3 rounded-r-lg transition-all duration-200 cursor-pointer"
                       variants={cardVariants}
                       whileHover={{ x: 4 }}
                       transition={{ duration: 0.2 }}
@@ -233,7 +271,7 @@ export default function DashboardPage() {
                             <span className={`px-2 py-1 text-xs font-medium rounded-full ${priorityColors[alert.priority]}`}>
                               {alert.priority}
                             </span>
-                            <span className="text-sm font-medium text-gray-900">
+                            <span className="text-sm font-medium text-blue-900">
                               {company?.name}
                             </span>
                           </div>
@@ -259,10 +297,10 @@ export default function DashboardPage() {
         >
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium text-gray-900">Recent Companies</h2>
+              <h2 className="text-lg font-medium text-blue-900">Recent Companies</h2>
               <Link
                 href="/dashboard/companies"
-                className="text-sm text-red-600 hover:text-red-500 transition-colors duration-200"
+                className="text-sm text-blue-700 hover:text-blue-600 transition-colors duration-200"
               >
                 View all
               </Link>
@@ -276,8 +314,8 @@ export default function DashboardPage() {
               animate="visible"
             >
               {recentCompanies.map((company, index) => (
-                <motion.div 
-                  key={company.id} 
+                <motion.div
+                  key={company.id}
                   className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-all duration-200 cursor-pointer"
                   variants={cardVariants}
                   whileHover={{ x: 4 }}
@@ -286,14 +324,14 @@ export default function DashboardPage() {
                   <div>
                     <Link
                       href={`/dashboard/companies/${company.id}`}
-                      className="text-sm font-medium text-red-600 hover:text-red-500 transition-colors duration-200"
+                      className="text-sm font-medium text-blue-700 hover:text-blue-600 transition-colors duration-200"
                     >
                       {company.name}
                     </Link>
                     <p className="text-xs text-gray-500">{company.industry} • {company.location}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-blue-900">
                       {formatCurrency(company.revenue)}
                     </p>
                     <p className="text-xs text-gray-500">{company.employees} employees</p>

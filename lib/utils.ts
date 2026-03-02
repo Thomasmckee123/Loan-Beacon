@@ -16,20 +16,22 @@ export function formatCurrency(amount: number): string {
 /**
  * Format dates in a readable format
  */
-export function formatDate(date: Date): string {
+export function formatDate(date: Date | string): string {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric'
-  }).format(date);
+  }).format(dateObj);
 }
 
 /**
  * Calculate days until maturity date
  */
-export function calculateDaysUntilMaturity(maturityDate: Date): number {
+export function calculateDaysUntilMaturity(maturityDate: Date | string): number {
+  const maturityDateObj = typeof maturityDate === 'string' ? new Date(maturityDate) : maturityDate;
   const today = new Date();
-  const diffTime = maturityDate.getTime() - today.getTime();
+  const diffTime = maturityDateObj.getTime() - today.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return diffDays;
 }

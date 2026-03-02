@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -39,11 +40,38 @@ export default function NewCompanyPage() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would save to database
-    alert('Company would be saved (demo mode)');
-    router.push('/dashboard/companies');
+    setIsSubmitting(true);
+
+    try {
+      const { createClient } = await import('@/lib/supabase/client');
+      const { createCompany } = await import('@/lib/supabase/queries');
+
+      const supabase = createClient();
+      await createCompany(supabase, {
+        name: formData.name,
+        industry: formData.industry,
+        location: formData.location,
+        revenue: parseFloat(formData.revenue),
+        employees: parseInt(formData.employees),
+        website: formData.website,
+        contactName: formData.contactName,
+        contactTitle: formData.contactTitle,
+        contactEmail: formData.contactEmail,
+        contactPhone: formData.contactPhone,
+        notes: formData.notes,
+      });
+
+      router.push('/dashboard/companies');
+    } catch (error) {
+      console.error('Error creating company:', error);
+      alert('Failed to create company. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -52,7 +80,7 @@ export default function NewCompanyPage() {
       <div className="flex items-center space-x-4">
         <Link
           href="/dashboard/companies"
-          className="text-blue-600 hover:text-blue-500 flex items-center"
+          className="text-navy-700 hover:text-navy-600 flex items-center"
         >
           ← Back to Companies
         </Link>
@@ -82,7 +110,7 @@ export default function NewCompanyPage() {
                   required
                   value={formData.name}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
                 />
               </div>
               <div>
@@ -95,7 +123,7 @@ export default function NewCompanyPage() {
                   required
                   value={formData.industry}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
                 >
                   <option value="">Select industry</option>
                   {industries.map(industry => (
@@ -118,7 +146,7 @@ export default function NewCompanyPage() {
                   placeholder="City, State"
                   value={formData.location}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
                 />
               </div>
               <div>
@@ -132,7 +160,7 @@ export default function NewCompanyPage() {
                   placeholder="https://..."
                   value={formData.website}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
                 />
               </div>
             </div>
@@ -150,7 +178,7 @@ export default function NewCompanyPage() {
                   placeholder="50000000"
                   value={formData.revenue}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
                 />
               </div>
               <div>
@@ -165,7 +193,7 @@ export default function NewCompanyPage() {
                   placeholder="100"
                   value={formData.employees}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
                 />
               </div>
             </div>
@@ -190,7 +218,7 @@ export default function NewCompanyPage() {
                   required
                   value={formData.contactName}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
                 />
               </div>
               <div>
@@ -205,7 +233,7 @@ export default function NewCompanyPage() {
                   placeholder="CFO, CEO, etc."
                   value={formData.contactTitle}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
                 />
               </div>
             </div>
@@ -222,7 +250,7 @@ export default function NewCompanyPage() {
                   required
                   value={formData.contactEmail}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
                 />
               </div>
               <div>
@@ -237,7 +265,7 @@ export default function NewCompanyPage() {
                   placeholder="+1 (555) 123-4567"
                   value={formData.contactPhone}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
                 />
               </div>
             </div>
@@ -261,7 +289,7 @@ export default function NewCompanyPage() {
                 placeholder="Additional notes about the company..."
                 value={formData.notes}
                 onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
               />
             </div>
           </div>
@@ -271,15 +299,16 @@ export default function NewCompanyPage() {
         <div className="flex justify-end space-x-3">
           <Link
             href="/dashboard/companies"
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-500"
           >
             Cancel
           </Link>
           <button
             type="submit"
-            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            disabled={isSubmitting}
+            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-navy-800 hover:bg-navy-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Add Company
+            {isSubmitting ? 'Adding...' : 'Add Company'}
           </button>
         </div>
       </form>

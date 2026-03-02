@@ -1,18 +1,51 @@
 'use client';
 
-import { useState } from 'react';
-import { companies, loans } from '@/data/dummyData';
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { getCompanies, getLoans } from '@/lib/supabase/queries';
+import { Company, Loan } from '@/lib/supabase/types';
 import { formatCurrency, formatDate, calculateDaysUntilMaturity } from '@/lib/utils';
 import Link from 'next/link';
 
 export default function LoansPage() {
+  const [companiesData, setCompaniesData] = useState<Company[]>([]);
+  const [loansData, setLoansData] = useState<Loan[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const supabase = createClient();
+        const [companies, loans] = await Promise.all([
+          getCompanies(supabase),
+          getLoans(supabase),
+        ]);
+        setCompaniesData(companies);
+        setLoansData(loans);
+      } catch (error) {
+        console.error('Error fetching loans:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-navy-800"></div>
+      </div>
+    );
+  }
 
   const statuses = ['All', 'Active', 'Upcoming', 'Maturing Soon', 'Matured'];
 
-  const filteredLoans = loans.filter(loan => {
-    const company = companies.find(c => c.id === loan.companyId);
+  const filteredLoans = loansData.filter(loan => {
+    const company = companiesData.find(c => c.id === loan.companyId);
     const matchesSearch = company?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          loan.lender.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          loan.type.toLowerCase().includes(searchTerm.toLowerCase());
@@ -23,7 +56,7 @@ export default function LoansPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Active': return 'bg-green-100 text-green-800';
-      case 'Upcoming': return 'bg-blue-100 text-blue-800';
+      case 'Upcoming': return 'bg-navy-100 text-navy-800';
       case 'Maturing Soon': return 'bg-orange-100 text-orange-800';
       case 'Matured': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
@@ -42,7 +75,7 @@ export default function LoansPage() {
         </div>
         <Link
           href="/dashboard/loans/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="bg-navy-800 text-white px-4 py-2 rounded-md hover:bg-navy-900 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2"
         >
           Add Loan
         </Link>
@@ -93,7 +126,7 @@ export default function LoansPage() {
               placeholder="Search by company, lender, or loan type..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
             />
           </div>
           <div>
@@ -104,7 +137,7 @@ export default function LoansPage() {
               id="status"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
             >
               {statuses.map(status => (
                 <option key={status} value={status}>{status}</option>
@@ -117,7 +150,7 @@ export default function LoansPage() {
       {/* Loans table */}
       <div className="bg-white shadow overflow-hidden rounded-lg">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+          <thead className="bg-navy-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Company
@@ -141,16 +174,16 @@ export default function LoansPage() {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredLoans.map((loan) => {
-              const company = companies.find(c => c.id === loan.companyId);
+              const company = companiesData.find(c => c.id === loan.companyId);
               const daysUntilMaturity = calculateDaysUntilMaturity(loan.maturityDate);
 
               return (
-                <tr key={loan.id} className="hover:bg-gray-50">
+                <tr key={loan.id} className="hover:bg-navy-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <Link
                         href={`/dashboard/companies/${company?.id}`}
-                        className="text-sm font-medium text-blue-600 hover:text-blue-500"
+                        className="text-sm font-medium text-navy-700 hover:text-navy-600"
                       >
                         {company?.name}
                       </Link>
@@ -181,7 +214,7 @@ export default function LoansPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <Link
                       href={`/dashboard/companies/${company?.id}`}
-                      className="text-blue-600 hover:text-blue-900"
+                      className="text-navy-700 hover:text-navy-600"
                     >
                       View
                     </Link>

@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { companies, loans } from '@/data/dummyData';
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { getCompanies, getLoans } from '@/lib/supabase/queries';
+import { Company, Loan } from '@/lib/supabase/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { Loan } from '@/lib/types';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Calendar as CalendarIcon, ArrowLeft, ArrowRight } from 'lucide-react';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -27,7 +29,7 @@ const itemVariants = {
 };
 
 // Calendar component
-function Calendar({ loans }: { loans: Loan[] }) {
+function Calendar({ loans, companies: companiesData }: { loans: Loan[]; companies: Company[] }) {
   const [currentDate, setCurrentDate] = useState(new Date());
   
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
@@ -67,7 +69,7 @@ function Calendar({ loans }: { loans: Loan[] }) {
   
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Maturing Soon': return 'bg-red-100 border-red-300';
+      case 'Maturing Soon': return 'bg-amber-100 border-amber-300';
       case 'Matured': return 'bg-red-200 border-red-400';
       default: return 'bg-gray-100 border-gray-300';
     }
@@ -88,19 +90,19 @@ function Calendar({ loans }: { loans: Loan[] }) {
         <div className="flex space-x-2">
           <motion.button
             onClick={() => navigateMonth('prev')}
-            className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+            className="p-2 text-gray-600 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors duration-200"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            ←
+            <ArrowLeft className="w-5 h-5" />
           </motion.button>
           <motion.button
             onClick={() => navigateMonth('next')}
-            className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+            className="p-2 text-gray-600 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors duration-200"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            →
+            <ArrowRight className="w-5 h-5" />
           </motion.button>
         </div>
       </div>
@@ -130,15 +132,15 @@ function Calendar({ loans }: { loans: Loan[] }) {
           return (
             <motion.div
               key={day}
-              className={`h-24 border border-gray-200 p-1 ${isToday ? 'bg-red-50 border-red-300' : 'hover:bg-gray-50'} transition-colors duration-200`}
+              className={`h-24 border border-gray-200 p-1 ${isToday ? 'bg-amber-50 border-amber-300' : 'hover:bg-gray-50'} transition-colors duration-200`}
               whileHover={{ scale: 1.02 }}
             >
-              <div className={`text-sm font-medium mb-1 ${isToday ? 'text-red-600' : 'text-gray-900'}`}>
+              <div className={`text-sm font-medium mb-1 ${isToday ? 'text-amber-600' : 'text-gray-900'}`}>
                 {day}
               </div>
               <div className="space-y-1">
                 {dayLoans.slice(0, 2).map((loan: Loan) => {
-                  const company = companies.find(c => c.id === loan.companyId);
+                  const company = companiesData.find(c => c.id === loan.companyId);
                   return (
                     <motion.div
                       key={loan.id}
@@ -164,7 +166,7 @@ function Calendar({ loans }: { loans: Loan[] }) {
       {/* Legend */}
       <div className="mt-6 flex items-center space-x-6 text-sm">
         <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 bg-red-100 border border-red-300 rounded"></div>
+          <div className="w-4 h-4 bg-amber-100 border border-amber-300 rounded"></div>
           <span>Maturing Soon</span>
         </div>
         <div className="flex items-center space-x-2">
@@ -181,19 +183,50 @@ function Calendar({ loans }: { loans: Loan[] }) {
 }
 
 export default function TimelinePage() {
+  const [companiesData, setCompaniesData] = useState<Company[]>([]);
+  const [loansData, setLoansData] = useState<Loan[]>([]);
   const [viewMode, setViewMode] = useState<'timeline' | 'calendar'>('timeline');
-  
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const supabase = createClient();
+        const [companies, loans] = await Promise.all([
+          getCompanies(supabase),
+          getLoans(supabase),
+        ]);
+        setCompaniesData(companies);
+        setLoansData(loans);
+      } catch (error) {
+        console.error('Error fetching timeline data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-navy-800"></div>
+      </div>
+    );
+  }
+
   // Group loans by maturity year and month
-  const groupedLoans = loans.reduce((acc, loan) => {
+  const groupedLoans = loansData.reduce((acc, loan) => {
     const maturityDate = new Date(loan.maturityDate);
     const yearMonth = `${maturityDate.getFullYear()}-${String(maturityDate.getMonth() + 1).padStart(2, '0')}`;
-    
+
     if (!acc[yearMonth]) {
       acc[yearMonth] = [];
     }
     acc[yearMonth].push(loan);
     return acc;
-  }, {} as Record<string, typeof loans>);
+  }, {} as Record<string, typeof loansData>);
 
   // Sort by date
   const sortedPeriods = Object.keys(groupedLoans).sort();
@@ -241,8 +274,8 @@ export default function TimelinePage() {
           <motion.button
             onClick={() => setViewMode('timeline')}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-              viewMode === 'timeline' 
-                ? 'bg-red-600 text-white shadow-sm' 
+              viewMode === 'timeline'
+                ? 'bg-blue-900 text-white shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
             whileHover={{ scale: 1.02 }}
@@ -253,8 +286,8 @@ export default function TimelinePage() {
           <motion.button
             onClick={() => setViewMode('calendar')}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-              viewMode === 'calendar' 
-                ? 'bg-red-600 text-white shadow-sm' 
+              viewMode === 'calendar'
+                ? 'bg-blue-900 text-white shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
             whileHover={{ scale: 1.02 }}
@@ -266,42 +299,42 @@ export default function TimelinePage() {
       </motion.div>
 
       {/* Summary stats */}
-      <motion.div 
+      <motion.div
         className="grid grid-cols-1 md:grid-cols-3 gap-6"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
-        <motion.div 
+        <motion.div
           className="bg-white p-6 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl"
           variants={itemVariants}
           whileHover={{ scale: 1.02, y: -4 }}
         >
           <div className="text-center">
-            <p className="text-2xl font-bold text-gray-900">{loans.length}</p>
+            <p className="text-2xl font-bold text-gray-900">{loansData.length}</p>
             <p className="text-sm text-gray-500">Total Loans Tracked</p>
           </div>
         </motion.div>
-        <motion.div 
-          className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl border-l-4 border-red-600"
+        <motion.div
+          className="bg-gradient-to-br from-amber-50 to-amber-100 p-6 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl border-l-4 border-amber-400"
           variants={itemVariants}
           whileHover={{ scale: 1.02, y: -4 }}
         >
           <div className="text-center">
-            <p className="text-2xl font-bold text-red-600">
-              {loans.filter(l => l.status === 'Maturing Soon').length}
+            <p className="text-2xl font-bold text-amber-600">
+              {loansData.filter(l => l.status === 'Maturing Soon').length}
             </p>
-            <p className="text-sm text-red-700">Maturing Soon (≤30 days)</p>
+            <p className="text-sm text-amber-700">Maturing Soon (≤30 days)</p>
           </div>
         </motion.div>
-        <motion.div 
+        <motion.div
           className="bg-white p-6 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl"
           variants={itemVariants}
           whileHover={{ scale: 1.02, y: -4 }}
         >
           <div className="text-center">
             <p className="text-2xl font-bold text-gray-600">
-              {loans.filter(l => l.status === 'Upcoming').length}
+              {loansData.filter(l => l.status === 'Upcoming').length}
             </p>
             <p className="text-sm text-gray-500">Upcoming (≤6 months)</p>
           </div>
@@ -333,24 +366,24 @@ export default function TimelinePage() {
             >
               {/* Timeline line */}
               {index !== sortedPeriods.length - 1 && (
-                <motion.div 
-                  className="absolute left-6 top-16 w-0.5 h-full bg-red-600"
+                <motion.div
+                  className="absolute left-6 top-16 w-0.5 h-full bg-blue-900"
                   initial={{ height: 0 }}
                   animate={{ height: '100%' }}
                   transition={{ duration: 0.6, delay: 0.2 * index }}
                 ></motion.div>
               )}
-              
+
               {/* Timeline marker */}
               <div className="flex items-start">
-                <motion.div 
-                  className="flex-shrink-0 w-12 h-12 bg-red-600 rounded-full flex items-center justify-center z-10 shadow-lg"
+                <motion.div
+                  className="flex-shrink-0 w-12 h-12 bg-blue-900 rounded-full flex items-center justify-center z-10 shadow-lg"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ duration: 0.4, delay: 0.2 * index }}
                   whileHover={{ scale: 1.1 }}
                 >
-                  <span className="text-white text-sm font-medium">📅</span>
+                  <CalendarIcon className="w-5 h-5 text-white" />
                 </motion.div>
                 
                 <div className="ml-6 flex-1">
@@ -383,7 +416,7 @@ export default function TimelinePage() {
                         {periodLoans
                           .sort((a, b) => new Date(a.maturityDate).getTime() - new Date(b.maturityDate).getTime())
                           .map((loan, loanIndex) => {
-                            const company = companies.find(c => c.id === loan.companyId);
+                            const company = companiesData.find(c => c.id === loan.companyId);
                             
                             return (
                               <motion.div
@@ -397,7 +430,7 @@ export default function TimelinePage() {
                                     <div className="flex items-center space-x-3">
                                       <Link
                                         href={`/dashboard/companies/${company?.id}`}
-                                        className="font-medium text-gray-900 hover:text-red-600 transition-colors duration-200"
+                                        className="font-medium text-gray-900 hover:text-blue-900 transition-colors duration-200"
                                       >
                                         {company?.name}
                                       </Link>
@@ -451,7 +484,7 @@ export default function TimelinePage() {
             
             {/* Empty state for timeline */}
             {sortedPeriods.length === 0 && (
-              <motion.div 
+              <motion.div
                 className="text-center py-12"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -461,7 +494,7 @@ export default function TimelinePage() {
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No loans to display</h3>
                 <p className="text-gray-500">
                   Add some loans to see them on the timeline.{' '}
-                  <Link href="/dashboard/loans/new" className="text-red-600 hover:text-red-500 transition-colors duration-200">
+                  <Link href="/dashboard/loans/new" className="text-blue-900 hover:text-blue-700 transition-colors duration-200">
                     Add your first loan
                   </Link>
                 </p>
@@ -476,7 +509,7 @@ export default function TimelinePage() {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.4 }}
           >
-            <Calendar loans={loans} />
+            <Calendar loans={loansData} companies={companiesData} />
           </motion.div>
         )}
       </AnimatePresence>

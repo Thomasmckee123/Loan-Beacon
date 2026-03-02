@@ -1,10 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { companies, loans, alerts } from '@/data/dummyData';
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { getCompanies, getLoans, getAlerts, dismissAlert, restoreAlert } from '@/lib/supabase/queries';
+import { Company, Loan, Alert } from '@/lib/supabase/types';
 import { formatDate } from '@/lib/utils';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AlertTriangle, AlertCircle, Info, Zap, CheckCircle } from 'lucide-react';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -31,8 +34,41 @@ const cardVariants = {
 };
 
 export default function AlertsPage() {
-  const [alertList, setAlertList] = useState(alerts);
+  const [alertList, setAlertList] = useState<Alert[]>([]);
+  const [companiesData, setCompaniesData] = useState<Company[]>([]);
+  const [loansData, setLoansData] = useState<Loan[]>([]);
   const [filter, setFilter] = useState('All');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const supabase = createClient();
+        const [companies, loans, alertsData] = await Promise.all([
+          getCompanies(supabase),
+          getLoans(supabase),
+          getAlerts(supabase),
+        ]);
+        setCompaniesData(companies);
+        setLoansData(loans);
+        setAlertList(alertsData);
+      } catch (error) {
+        console.error('Error fetching alerts:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-navy-800"></div>
+      </div>
+    );
+  }
 
   const priorities = ['All', 'Critical', 'High', 'Medium', 'Low'];
 
@@ -63,32 +99,44 @@ export default function AlertsPage() {
 
   const getPriorityIcon = (priority: string) => {
     switch (priority) {
-      case 'Critical': return '🚨';
-      case 'High': return '⚠️';
-      case 'Medium': return '⚡';
-      case 'Low': return 'ℹ️';
-      default: return '📋';
+      case 'Critical': return <AlertTriangle className="w-6 h-6 text-red-600" />;
+      case 'High': return <AlertCircle className="w-6 h-6 text-red-500" />;
+      case 'Medium': return <Zap className="w-6 h-6 text-yellow-600" />;
+      case 'Low': return <Info className="w-6 h-6 text-gray-600" />;
+      default: return <CheckCircle className="w-6 h-6 text-gray-600" />;
     }
   };
 
-  const dismissAlert = (alertId: string) => {
-    setAlertList(prev => 
-      prev.map(alert => 
-        alert.id === alertId 
-          ? { ...alert, dismissed: true }
-          : alert
-      )
-    );
+  const handleDismissAlert = async (alertId: string) => {
+    try {
+      const supabase = createClient();
+      await dismissAlert(supabase, alertId);
+      setAlertList(prev =>
+        prev.map(alert =>
+          alert.id === alertId
+            ? { ...alert, dismissed: true }
+            : alert
+        )
+      );
+    } catch (error) {
+      console.error('Error dismissing alert:', error);
+    }
   };
 
-  const undismissAlert = (alertId: string) => {
-    setAlertList(prev => 
-      prev.map(alert => 
-        alert.id === alertId 
-          ? { ...alert, dismissed: false }
-          : alert
-      )
-    );
+  const handleRestoreAlert = async (alertId: string) => {
+    try {
+      const supabase = createClient();
+      await restoreAlert(supabase, alertId);
+      setAlertList(prev =>
+        prev.map(alert =>
+          alert.id === alertId
+            ? { ...alert, dismissed: false }
+            : alert
+        )
+      );
+    } catch (error) {
+      console.error('Error restoring alert:', error);
+    }
   };
 
   const activeAlerts = filteredAlerts.filter(alert => !alert.dismissed);
@@ -169,7 +217,7 @@ export default function AlertsPage() {
       </motion.div>
 
       {/* Filter */}
-      <motion.div 
+      <motion.div
         className="bg-white p-6 rounded-lg shadow-lg"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -183,7 +231,7 @@ export default function AlertsPage() {
             id="priority-filter"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+            className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-900 focus:border-blue-900 transition-all duration-200"
           >
             {priorities.map(priority => (
               <option key={priority} value={priority}>{priority}</option>
@@ -225,21 +273,20 @@ export default function AlertsPage() {
                   return priorityOrder[b.priority as keyof typeof priorityOrder] - priorityOrder[a.priority as keyof typeof priorityOrder];
                 })
                 .map((alert) => {
-                  const company = companies.find(c => c.id === alert.companyId);
-                  const loan = loans.find(l => l.id === alert.loanId);
+                  const company = companiesData.find(c => c.id === alert.companyId);
+                  const loan = loansData.find(l => l.id === alert.loanId);
 
                   return (
-                    <motion.div 
-                      key={alert.id} 
-                      className={`px-6 py-4 border-l-4 ${getBorderColor(alert.priority)} hover:bg-red-50 transition-all duration-200`}
+                    <motion.div
+                      key={alert.id}
+                      className={`px-6 py-4 border-l-4 ${getBorderColor(alert.priority)} hover:bg-blue-50 transition-all duration-200`}
                       variants={cardVariants}
                       whileHover={{ x: 4 }}
                       exit="exit"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-4 flex-1">
-                          <motion.div 
-                            className="text-2xl"
+                          <motion.div
                             animate={{ rotate: [0, 10, -10, 0] }}
                             transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
                           >
@@ -258,7 +305,7 @@ export default function AlertsPage() {
                             <div className="mb-2">
                               <Link
                                 href={`/dashboard/companies/${company?.id}`}
-                                className="font-medium text-red-600 hover:text-red-500 transition-colors duration-200"
+                                className="font-medium text-blue-900 hover:text-blue-700 transition-colors duration-200"
                               >
                                 {company?.name}
                               </Link>
@@ -284,8 +331,8 @@ export default function AlertsPage() {
                         
                         <div className="ml-4">
                           <motion.button
-                            onClick={() => dismissAlert(alert.id)}
-                            className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-red-100 hover:text-red-700 hover:border-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200"
+                            onClick={() => handleDismissAlert(alert.id)}
+                            className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-blue-100 hover:text-blue-700 hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-900 transition-all duration-200"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                           >
@@ -317,8 +364,8 @@ export default function AlertsPage() {
           
           <div className="divide-y divide-gray-200">
             {dismissedAlerts.map((alert) => {
-              const company = companies.find(c => c.id === alert.companyId);
-              const loan = loans.find(l => l.id === alert.loanId);
+              const company = companiesData.find(c => c.id === alert.companyId);
+              const loan = loansData.find(l => l.id === alert.loanId);
 
               return (
                 <div key={alert.id} className="px-6 py-4 bg-gray-50">
@@ -355,8 +402,8 @@ export default function AlertsPage() {
                     
                     <div className="ml-4">
                       <motion.button
-                        onClick={() => undismissAlert(alert.id)}
-                        className="px-3 py-1 text-xs font-medium text-red-700 bg-red-100 border border-red-300 rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200"
+                        onClick={() => handleRestoreAlert(alert.id)}
+                        className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 border border-blue-300 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-900 transition-all duration-200"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >
