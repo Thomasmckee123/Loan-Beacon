@@ -1,25 +1,33 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Landmark, Mail, Lock } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
+import { Suspense, useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { Landmark, Mail, Lock } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState("");
   const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
     // Check for error or message in URL params
-    const errorParam = searchParams.get('error');
-    const messageParam = searchParams.get('message');
+    const errorParam = searchParams.get("error");
+    const messageParam = searchParams.get("message");
 
     if (errorParam) {
       setError(decodeURIComponent(errorParam));
@@ -30,8 +38,8 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccessMessage('');
+    setError("");
+    setSuccessMessage("");
     setLoading(true);
 
     try {
@@ -39,7 +47,7 @@ export default function LoginPage() {
 
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
       });
 
       if (signInError) {
@@ -49,10 +57,12 @@ export default function LoginPage() {
       }
 
       // Success - redirect to dashboard
-      router.push('/dashboard');
+      router.push("/dashboard");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred during sign in');
+      setError(
+        err instanceof Error ? err.message : "An error occurred during sign in",
+      );
       setLoading(false);
     }
   };
@@ -114,7 +124,10 @@ export default function LoginPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: 0.2 }}
             >
-              <label htmlFor="email" className="flex items-center text-sm font-medium text-navy-700 mb-1">
+              <label
+                htmlFor="email"
+                className="flex items-center text-sm font-medium text-navy-700 mb-1"
+              >
                 <Mail className="w-4 h-4 mr-2 text-gold-500" />
                 Email address
               </label>
@@ -138,7 +151,10 @@ export default function LoginPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: 0.3 }}
             >
-              <label htmlFor="password" className="flex items-center text-sm font-medium text-navy-700 mb-1">
+              <label
+                htmlFor="password"
+                className="flex items-center text-sm font-medium text-navy-700 mb-1"
+              >
                 <Lock className="w-4 h-4 mr-2 text-gold-500" />
                 Password
               </label>
@@ -169,7 +185,7 @@ export default function LoginPage() {
                 whileHover={{ scale: loading ? 1 : 1.02 }}
                 whileTap={{ scale: loading ? 1 : 0.98 }}
               >
-                {loading ? 'Signing in...' : 'Sign in'}
+                {loading ? "Signing in..." : "Sign in"}
               </motion.button>
             </motion.div>
           </form>
@@ -182,8 +198,11 @@ export default function LoginPage() {
           >
             <div className="text-center">
               <span className="text-sm text-navy-600">
-                Don&apos;t have an account?{' '}
-                <Link href="/register" className="font-medium text-navy-700 hover:text-gold-600 transition-colors duration-200">
+                Don&apos;t have an account?{" "}
+                <Link
+                  href="/register"
+                  className="font-medium text-navy-700 hover:text-gold-600 transition-colors duration-200"
+                >
                   Sign up
                 </Link>
               </span>

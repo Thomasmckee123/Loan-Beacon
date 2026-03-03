@@ -2,33 +2,32 @@
 export interface CompanyRow {
   id: string;
   user_id: string;
+  team_id: string;
   name: string;
   industry: string;
+  size: string;
   location: string;
-  revenue: number;
-  employees: number;
   website: string;
-  contact_name: string;
-  contact_title: string;
-  contact_email: string;
-  contact_phone: string;
-  notes: string;
+  assigned_to_user_id: string | null;
+  claimed_by_user_id: string | null;
+  claimed_at: string | null;
   created_at: string;
   updated_at: string;
+  deleted_at: string | null;
 }
 
 export interface LoanRow {
   id: string;
-  user_id: string;
   company_id: string;
-  type: string;
   amount: number;
   currency: string;
   lender: string;
   origination_date: string;
   maturity_date: string;
+  loan_type: string;
   interest_rate: number;
-  covenants: string;
+  status: string;
+  status_updated_at: string;
   notes: string;
   created_at: string;
   updated_at: string;
@@ -36,14 +35,12 @@ export interface LoanRow {
 
 export interface AlertRow {
   id: string;
-  user_id: string;
   loan_id: string;
-  company_id: string;
-  type: 'Maturity Warning' | 'Covenant Breach' | 'Rate Review';
-  priority: 'Low' | 'Medium' | 'High' | 'Critical';
-  message: string;
-  days_until_maturity: number;
-  dismissed: boolean;
+  user_id: string;
+  alert_type: string;
+  days_before_maturity: number;
+  sent_successfully: boolean;
+  sent_at: string | null;
   created_at: string;
 }
 
@@ -51,48 +48,43 @@ export interface AlertRow {
 export interface Company {
   id: string;
   userId: string;
+  teamId: string;
   name: string;
   industry: string;
+  size: string;
   location: string;
-  revenue: number;
-  employees: number;
   website: string;
-  contactInfo: {
-    name: string;
-    title: string;
-    email: string;
-    phone: string;
-  };
-  notes: string;
+  assignedToUserId: string | null;
+  claimedByUserId: string | null;
+  claimedAt: string | null;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface Loan {
   id: string;
-  userId: string;
   companyId: string;
-  type: string;
   amount: number;
   currency: string;
   lender: string;
   originationDate: string;
   maturityDate: string;
+  loanType: string;
   interestRate: number;
-  covenants: string;
-  status: 'Active' | 'Upcoming' | 'Maturing Soon' | 'Matured';
+  status: string;
+  statusUpdatedAt: string;
   notes: string;
+  computedStatus: 'Active' | 'Upcoming' | 'Maturing Soon' | 'Matured';
 }
 
 export interface Alert {
   id: string;
-  userId: string;
   loanId: string;
-  companyId: string;
-  type: 'Maturity Warning' | 'Covenant Breach' | 'Rate Review';
-  priority: 'Low' | 'Medium' | 'High' | 'Critical';
-  message: string;
-  daysUntilMaturity: number;
-  dismissed: boolean;
+  userId: string;
+  alertType: string;
+  daysBeforeMaturity: number;
+  sentSuccessfully: boolean;
+  sentAt: string | null;
   createdAt: string;
 }
 
@@ -101,52 +93,47 @@ export function companyFromRow(row: CompanyRow): Company {
   return {
     id: row.id,
     userId: row.user_id,
+    teamId: row.team_id,
     name: row.name,
     industry: row.industry,
+    size: row.size,
     location: row.location,
-    revenue: row.revenue,
-    employees: row.employees,
     website: row.website,
-    contactInfo: {
-      name: row.contact_name,
-      title: row.contact_title,
-      email: row.contact_email,
-      phone: row.contact_phone,
-    },
-    notes: row.notes,
+    assignedToUserId: row.assigned_to_user_id,
+    claimedByUserId: row.claimed_by_user_id,
+    claimedAt: row.claimed_at,
     createdAt: row.created_at,
+    updatedAt: row.updated_at,
   };
 }
 
 export function loanFromRow(row: LoanRow): Loan {
   return {
     id: row.id,
-    userId: row.user_id,
     companyId: row.company_id,
-    type: row.type,
     amount: row.amount,
     currency: row.currency,
     lender: row.lender,
     originationDate: row.origination_date,
     maturityDate: row.maturity_date,
+    loanType: row.loan_type,
     interestRate: row.interest_rate,
-    covenants: row.covenants,
-    status: getLoanStatus(new Date(row.maturity_date)),
+    status: row.status,
+    statusUpdatedAt: row.status_updated_at,
     notes: row.notes,
+    computedStatus: getLoanStatus(new Date(row.maturity_date)),
   };
 }
 
 export function alertFromRow(row: AlertRow): Alert {
   return {
     id: row.id,
-    userId: row.user_id,
     loanId: row.loan_id,
-    companyId: row.company_id,
-    type: row.type,
-    priority: row.priority,
-    message: row.message,
-    daysUntilMaturity: row.days_until_maturity,
-    dismissed: row.dismissed,
+    userId: row.user_id,
+    alertType: row.alert_type,
+    daysBeforeMaturity: row.days_before_maturity,
+    sentSuccessfully: row.sent_successfully,
+    sentAt: row.sent_at,
     createdAt: row.created_at,
   };
 }

@@ -63,7 +63,7 @@ export default function CompanyDetailPage() {
   }
 
   const totalLoanAmount = companyLoans.reduce((sum, loan) => sum + loan.amount, 0);
-  const activeLoanCount = companyLoans.filter(loan => loan.status === 'Active').length;
+  const activeLoanCount = companyLoans.filter(loan => loan.computedStatus === 'Active').length;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -96,19 +96,15 @@ export default function CompanyDetailPage() {
               <p className="text-gray-600">{company.industry} • {company.location}</p>
             </div>
             <div className="text-right">
-              <p className="text-lg font-semibold text-gray-900">{formatCurrency(company.revenue)}</p>
-              <p className="text-sm text-gray-500">Annual Revenue</p>
+              <p className="text-lg font-semibold text-gray-900">{company.size}</p>
+              <p className="text-sm text-gray-500">Company Size</p>
             </div>
           </div>
         </div>
 
         {/* Company stats */}
         <div className="px-6 py-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900">{company.employees}</p>
-              <p className="text-sm text-gray-500">Employees</p>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center">
               <p className="text-2xl font-bold text-gray-900">{companyLoans.length}</p>
               <p className="text-sm text-gray-500">Total Loans</p>
@@ -141,43 +137,29 @@ export default function CompanyDetailPage() {
               </a>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Notes</p>
-              <p className="text-gray-900">{company.notes}</p>
-            </div>
-            <div>
               <p className="text-sm font-medium text-gray-500">Added</p>
               <p className="text-gray-900">{formatDate(new Date(company.createdAt))}</p>
             </div>
           </div>
         </div>
 
-        {/* Contact information */}
+        {/* Additional Info */}
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Primary Contact</h2>
+            <h2 className="text-lg font-medium text-gray-900">Details</h2>
           </div>
           <div className="px-6 py-4 space-y-4">
             <div>
-              <p className="text-sm font-medium text-gray-500">Name</p>
-              <p className="text-gray-900">{company.contactInfo.name}</p>
+              <p className="text-sm font-medium text-gray-500">Size</p>
+              <p className="text-gray-900">{company.size}</p>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Title</p>
-              <p className="text-gray-900">{company.contactInfo.title}</p>
+              <p className="text-sm font-medium text-gray-500">Industry</p>
+              <p className="text-gray-900">{company.industry}</p>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Email</p>
-              <a href={`mailto:${company.contactInfo.email}`}
-                 className="text-navy-700 hover:text-navy-600">
-                {company.contactInfo.email}
-              </a>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500">Phone</p>
-              <a href={`tel:${company.contactInfo.phone}`}
-                 className="text-navy-700 hover:text-navy-600">
-                {company.contactInfo.phone}
-              </a>
+              <p className="text-sm font-medium text-gray-500">Location</p>
+              <p className="text-gray-900">{company.location}</p>
             </div>
           </div>
         </div>
@@ -225,7 +207,7 @@ export default function CompanyDetailPage() {
                   <tr key={loan.id} className="hover:bg-navy-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
-                        <div className="text-sm font-medium text-gray-900">{loan.type}</div>
+                        <div className="text-sm font-medium text-gray-900">{loan.loanType}</div>
                         <div className="text-sm text-gray-500">{loan.lender}</div>
                       </div>
                     </td>
@@ -240,8 +222,8 @@ export default function CompanyDetailPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(loan.status)}`}>
-                        {loan.status}
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(loan.computedStatus)}`}>
+                        {loan.computedStatus}
                       </span>
                     </td>
                   </tr>

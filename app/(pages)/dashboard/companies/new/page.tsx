@@ -1,24 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Select from 'react-select';
+import { countryOptions } from '@/lib/countries';
 
 export default function NewCompanyPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
     industry: '',
+    size: '',
     location: '',
-    revenue: '',
-    employees: '',
     website: '',
-    contactName: '',
-    contactTitle: '',
-    contactEmail: '',
-    contactPhone: '',
-    notes: ''
   });
 
   const industries = [
@@ -31,6 +26,13 @@ export default function NewCompanyPage() {
     'Real Estate',
     'Transportation',
     'Other'
+  ];
+
+  const companySizes = [
+    'Small',
+    'Mid-Market',
+    'Large',
+    'Enterprise'
   ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -54,15 +56,9 @@ export default function NewCompanyPage() {
       await createCompany(supabase, {
         name: formData.name,
         industry: formData.industry,
+        size: formData.size,
         location: formData.location,
-        revenue: parseFloat(formData.revenue),
-        employees: parseInt(formData.employees),
         website: formData.website,
-        contactName: formData.contactName,
-        contactTitle: formData.contactTitle,
-        contactEmail: formData.contactEmail,
-        contactPhone: formData.contactPhone,
-        notes: formData.notes,
       });
 
       router.push('/dashboard/companies');
@@ -135,19 +131,22 @@ export default function NewCompanyPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="location" className="block text-sm font-medium text-gray-700">
-                  Location *
+                <label htmlFor="size" className="block text-sm font-medium text-gray-700">
+                  Company Size *
                 </label>
-                <input
-                  type="text"
-                  name="location"
-                  id="location"
+                <select
+                  name="size"
+                  id="size"
                   required
-                  placeholder="City, State"
-                  value={formData.location}
+                  value={formData.size}
                   onChange={handleChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
-                />
+                >
+                  <option value="">Select size</option>
+                  {companySizes.map(size => (
+                    <option key={size} value={size}>{size}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label htmlFor="website" className="block text-sm font-medium text-gray-700">
@@ -165,131 +164,23 @@ export default function NewCompanyPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="revenue" className="block text-sm font-medium text-gray-700">
-                  Annual Revenue (USD) *
-                </label>
-                <input
-                  type="number"
-                  name="revenue"
-                  id="revenue"
-                  required
-                  placeholder="50000000"
-                  value={formData.revenue}
-                  onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
-                />
-              </div>
-              <div>
-                <label htmlFor="employees" className="block text-sm font-medium text-gray-700">
-                  Number of Employees *
-                </label>
-                <input
-                  type="number"
-                  name="employees"
-                  id="employees"
-                  required
-                  placeholder="100"
-                  value={formData.employees}
-                  onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Contact Information */}
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Primary Contact</h2>
-          </div>
-          <div className="px-6 py-4 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="contactName" className="block text-sm font-medium text-gray-700">
-                  Contact Name *
-                </label>
-                <input
-                  type="text"
-                  name="contactName"
-                  id="contactName"
-                  required
-                  value={formData.contactName}
-                  onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
-                />
-              </div>
-              <div>
-                <label htmlFor="contactTitle" className="block text-sm font-medium text-gray-700">
-                  Title *
-                </label>
-                <input
-                  type="text"
-                  name="contactTitle"
-                  id="contactTitle"
-                  required
-                  placeholder="CFO, CEO, etc."
-                  value={formData.contactTitle}
-                  onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700">
-                  Email *
-                </label>
-                <input
-                  type="email"
-                  name="contactEmail"
-                  id="contactEmail"
-                  required
-                  value={formData.contactEmail}
-                  onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
-                />
-              </div>
-              <div>
-                <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-700">
-                  Phone *
-                </label>
-                <input
-                  type="tel"
-                  name="contactPhone"
-                  id="contactPhone"
-                  required
-                  placeholder="+1 (555) 123-4567"
-                  value={formData.contactPhone}
-                  onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Notes */}
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Additional Information</h2>
-          </div>
-          <div className="px-6 py-4">
             <div>
-              <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
-                Notes
+              <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+                Country *
               </label>
-              <textarea
-                name="notes"
-                id="notes"
-                rows={4}
-                placeholder="Additional notes about the company..."
-                value={formData.notes}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
+              <Select
+                inputId="location"
+                options={countryOptions}
+                value={countryOptions.find((o) => o.value === formData.location) || null}
+                onChange={(option) =>
+                  setFormData({ ...formData, location: option?.value || '' })
+                }
+                placeholder="Select a country..."
+                isClearable
+                classNames={{
+                  control: () => 'mt-1 !border-gray-300 !rounded-md !shadow-sm',
+                  menu: () => '!z-50',
+                }}
               />
             </div>
           </div>

@@ -1,17 +1,21 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { getCompanies, getLoans } from '@/lib/supabase/queries';
-import { Company, Loan } from '@/lib/supabase/types';
-import { formatCurrency, formatDate, calculateDaysUntilMaturity } from '@/lib/utils';
-import Link from 'next/link';
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { getCompanies, getLoans } from "@/lib/supabase/queries";
+import { Company, Loan } from "@/lib/supabase/types";
+import {
+  formatCurrency,
+  formatDate,
+  calculateDaysUntilMaturity,
+} from "@/lib/utils";
+import Link from "next/link";
 
 export default function LoansPage() {
   const [companiesData, setCompaniesData] = useState<Company[]>([]);
   const [loansData, setLoansData] = useState<Loan[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,7 +29,7 @@ export default function LoansPage() {
         setCompaniesData(companies);
         setLoansData(loans);
       } catch (error) {
-        console.error('Error fetching loans:', error);
+        console.error("Error fetching loans:", error);
       } finally {
         setLoading(false);
       }
@@ -42,36 +46,47 @@ export default function LoansPage() {
     );
   }
 
-  const statuses = ['All', 'Active', 'Upcoming', 'Maturing Soon', 'Matured'];
+  const statuses = ["All", "Active", "Upcoming", "Maturing Soon", "Matured"];
 
-  const filteredLoans = loansData.filter(loan => {
-    const company = companiesData.find(c => c.id === loan.companyId);
-    const matchesSearch = company?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         loan.lender.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         loan.type.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'All' || loan.status === statusFilter;
+  const filteredLoans = loansData.filter((loan) => {
+    const company = companiesData.find((c) => c.id === loan.companyId);
+    const matchesSearch =
+      company?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      loan.lender.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      loan.loanType.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      statusFilter === "All" || loan.computedStatus === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Active': return 'bg-green-100 text-green-800';
-      case 'Upcoming': return 'bg-navy-100 text-navy-800';
-      case 'Maturing Soon': return 'bg-orange-100 text-orange-800';
-      case 'Matured': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "Active":
+        return "bg-green-100 text-green-800";
+      case "Upcoming":
+        return "bg-navy-100 text-navy-800";
+      case "Maturing Soon":
+        return "bg-orange-100 text-orange-800";
+      case "Matured":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
-  const totalLoanValue = filteredLoans.reduce((sum, loan) => sum + loan.amount, 0);
+  const totalLoanValue = filteredLoans.reduce(
+    (sum, loan) => sum + loan.amount,
+    0,
+  );
 
   return (
     <div className="space-y-6">
-      {/* Page header */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Loans</h1>
-          <p className="text-gray-600">Monitor loan portfolios and maturity dates</p>
+          <p className="text-gray-600">
+            Monitor loan portfolios and maturity dates
+          </p>
         </div>
         <Link
           href="/dashboard/loans/new"
@@ -81,24 +96,27 @@ export default function LoansPage() {
         </Link>
       </div>
 
-      {/* Summary stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="text-center">
-            <p className="text-2xl font-bold text-gray-900">{filteredLoans.length}</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {filteredLoans.length}
+            </p>
             <p className="text-sm text-gray-500">Total Loans</p>
           </div>
         </div>
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="text-center">
-            <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalLoanValue)}</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {formatCurrency(totalLoanValue)}
+            </p>
             <p className="text-sm text-gray-500">Total Value</p>
           </div>
         </div>
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="text-center">
             <p className="text-2xl font-bold text-gray-900">
-              {filteredLoans.filter(l => l.status === 'Maturing Soon').length}
+              {filteredLoans.filter((l) => l.computedStatus === "Maturing Soon").length}
             </p>
             <p className="text-sm text-gray-500">Maturing Soon</p>
           </div>
@@ -106,7 +124,7 @@ export default function LoansPage() {
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="text-center">
             <p className="text-2xl font-bold text-gray-900">
-              {filteredLoans.filter(l => l.status === 'Active').length}
+              {filteredLoans.filter((l) => l.computedStatus === "Active").length}
             </p>
             <p className="text-sm text-gray-500">Active</p>
           </div>
@@ -117,7 +135,10 @@ export default function LoansPage() {
       <div className="bg-white p-6 rounded-lg shadow">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="search" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="search"
+              className="block text-sm font-medium text-gray-700"
+            >
               Search Loans
             </label>
             <input
@@ -130,7 +151,10 @@ export default function LoansPage() {
             />
           </div>
           <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="status"
+              className="block text-sm font-medium text-gray-700"
+            >
               Filter by Status
             </label>
             <select
@@ -139,8 +163,10 @@ export default function LoansPage() {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
             >
-              {statuses.map(status => (
-                <option key={status} value={status}>{status}</option>
+              {statuses.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
               ))}
             </select>
           </div>
@@ -174,8 +200,12 @@ export default function LoansPage() {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredLoans.map((loan) => {
-              const company = companiesData.find(c => c.id === loan.companyId);
-              const daysUntilMaturity = calculateDaysUntilMaturity(loan.maturityDate);
+              const company = companiesData.find(
+                (c) => c.id === loan.companyId,
+              );
+              const daysUntilMaturity = calculateDaysUntilMaturity(
+                loan.maturityDate,
+              );
 
               return (
                 <tr key={loan.id} className="hover:bg-navy-50">
@@ -187,28 +217,44 @@ export default function LoansPage() {
                       >
                         {company?.name}
                       </Link>
-                      <div className="text-sm text-gray-500">{company?.industry}</div>
+                      <div className="text-sm text-gray-500">
+                        {company?.industry}
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">{loan.type}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {loan.loanType}
+                   </div>
                       <div className="text-sm text-gray-500">{loan.lender}</div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{formatCurrency(loan.amount)}</div>
-                    <div className="text-sm text-gray-500">{loan.interestRate}% rate</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{formatDate(loan.maturityDate)}</div>
-                    <div className={`text-sm ${daysUntilMaturity < 30 ? 'text-red-600' : 'text-gray-500'}`}>
-                      {daysUntilMaturity > 0 ? `${daysUntilMaturity} days` : 'Overdue'}
+                    <div className="text-sm text-gray-900">
+                      {formatCurrency(loan.amount)}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {loan.interestRate}% rate
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(loan.status)}`}>
-                      {loan.status}
+                    <div className="text-sm text-gray-900">
+                      {formatDate(loan.maturityDate)}
+                    </div>
+                    <div
+                      className={`text-sm ${daysUntilMaturity < 30 ? "text-red-600" : "text-gray-500"}`}
+                    >
+                      {daysUntilMaturity > 0
+                        ? `${daysUntilMaturity} days`
+                        : "Overdue"}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span
+                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(loan.computedStatus)}`}
+                    >
+                      {loan.computedStatus}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -227,7 +273,9 @@ export default function LoansPage() {
 
         {filteredLoans.length === 0 && (
           <div className="px-6 py-12 text-center">
-            <p className="text-gray-500">No loans found matching your criteria.</p>
+            <p className="text-gray-500">
+              No loans found matching your criteria.
+            </p>
           </div>
         )}
       </div>

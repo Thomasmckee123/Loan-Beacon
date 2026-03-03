@@ -117,13 +117,10 @@ export default function CompaniesPage() {
                 Industry
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Revenue
+                Size
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Loans
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Contact
               </th>
             </tr>
           </thead>
@@ -151,16 +148,11 @@ export default function CompaniesPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{formatCurrency(company.revenue)}</div>
-                    <div className="text-sm text-gray-500">{company.employees} employees</div>
+                    <div className="text-sm text-gray-900">{company.size}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">{companyLoans.length} loans</div>
                     <div className="text-sm text-gray-500">{formatCurrency(totalLoanAmount)} total</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{company.contactInfo.name}</div>
-                    <div className="text-sm text-gray-500">{company.contactInfo.title}</div>
                   </td>
                 </tr>
               );

@@ -12,14 +12,13 @@ export default function NewLoanPage() {
   const [companiesData, setCompaniesData] = useState<Company[]>([]);
   const [formData, setFormData] = useState({
     companyId: '',
-    type: '',
+    loanType: '',
     amount: '',
     currency: 'USD',
     lender: '',
     originationDate: '',
     maturityDate: '',
     interestRate: '',
-    covenants: '',
     notes: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -67,14 +66,13 @@ export default function NewLoanPage() {
       const supabase = createClient();
       await createLoan(supabase, {
         companyId: formData.companyId,
-        type: formData.type,
+        loanType: formData.loanType,
         amount: parseFloat(formData.amount),
         currency: formData.currency,
         lender: formData.lender,
         originationDate: formData.originationDate,
         maturityDate: formData.maturityDate,
         interestRate: parseFloat(formData.interestRate),
-        covenants: formData.covenants,
         notes: formData.notes,
       });
 
@@ -138,14 +136,14 @@ export default function NewLoanPage() {
                 </select>
               </div>
               <div>
-                <label htmlFor="type" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="loanType" className="block text-sm font-medium text-gray-700">
                   Loan Type *
                 </label>
                 <select
-                  name="type"
-                  id="type"
+                  name="loanType"
+                  id="loanType"
                   required
-                  value={formData.type}
+                  value={formData.loanType}
                   onChange={handleChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
                 >
@@ -263,20 +261,6 @@ export default function NewLoanPage() {
               </div>
             </div>
 
-            <div>
-              <label htmlFor="covenants" className="block text-sm font-medium text-gray-700">
-                Covenants
-              </label>
-              <input
-                type="text"
-                name="covenants"
-                id="covenants"
-                placeholder="Debt-to-EBITDA < 3.0x, Min DSCR 1.25x"
-                value={formData.covenants}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
-              />
-            </div>
           </div>
         </div>
 

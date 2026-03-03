@@ -1,21 +1,27 @@
-'use client';
+"use client";
 
-import { formatCurrency, calculateDaysUntilMaturity } from '@/lib/utils';
-import { createClient } from '@/lib/supabase/client';
-import { getCompanies, getLoans, getAlerts } from '@/lib/supabase/queries';
-import { Company, Loan, Alert } from '@/lib/supabase/types';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
-import { Building2, Banknote, Clock, DollarSign, AlertTriangle, ArrowRight, TrendingUp } from 'lucide-react';
+import { formatCurrency, calculateDaysUntilMaturity } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
+import { getCompanies, getLoans, getAlerts } from "@/lib/supabase/queries";
+import { Company, Loan, Alert } from "@/lib/supabase/types";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { Building2, Banknote, Clock, DollarSign } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 // Animated counter component
-function AnimatedCounter({ value, duration = 2000 }: { value: number; duration?: number }) {
+function AnimatedCounter({
+  value,
+  duration = 2000,
+}: {
+  value: number;
+  duration?: number;
+}) {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    let startTime = Date.now();
-    const endTime = startTime + duration;
+    const startTime = Date.now();
 
     const timer = setInterval(() => {
       const now = Date.now();
@@ -38,9 +44,9 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1
-    }
-  }
+      staggerChildren: 0.1,
+    },
+  },
 };
 
 const cardVariants = {
@@ -48,8 +54,8 @@ const cardVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.4 }
-  }
+    transition: { duration: 0.4 },
+  },
 };
 
 export default function DashboardPage() {
@@ -57,6 +63,7 @@ export default function DashboardPage() {
   const [loans, setLoans] = useState<Loan[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchData() {
@@ -71,7 +78,7 @@ export default function DashboardPage() {
         setLoans(loansData);
         setAlerts(alertsData);
       } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+        console.error("Error fetching dashboard data:", error);
       } finally {
         setLoading(false);
       }
@@ -90,42 +97,43 @@ export default function DashboardPage() {
 
   // Calculate stats
   const totalCompanies = companies.length;
-  const activeLoans = loans.filter(loan => loan.status === 'Active').length;
-  const upcomingLoans = loans.filter(loan => {
+  const activeLoans = loans.filter((loan) => loan.computedStatus === "Active").length;
+  const upcomingLoans = loans.filter((loan) => {
     const days = calculateDaysUntilMaturity(loan.maturityDate);
     return days <= 180 && days > 0;
   }).length;
   const totalLoanValue = loans.reduce((sum, loan) => sum + loan.amount, 0);
 
-  // Get urgent alerts (not dismissed and high/critical priority)
-  const urgentAlerts = alerts
-    .filter(alert => !alert.dismissed && (alert.priority === 'High' || alert.priority === 'Critical'))
-    .slice(0, 3);
+  // Get recent alerts
+  const urgentAlerts = alerts.slice(0, 3);
 
   // Get recent companies (last 3)
   const recentCompanies = companies
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    )
     .slice(0, 3);
 
   return (
-    <motion.div 
+    <motion.div
       className="space-y-6"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Page header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">Track loan maturities and refinancing opportunities</p>
+        <p className="text-gray-600">
+          Track loan maturities and refinancing opportunities
+        </p>
       </motion.div>
 
-      {/* Stats cards */}
-      <motion.div 
+      <motion.div
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
         variants={containerVariants}
         initial="hidden"
@@ -134,17 +142,22 @@ export default function DashboardPage() {
         <motion.div
           className="bg-white p-6 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl cursor-pointer"
           variants={cardVariants}
+          onClick={() => {
+            router.push("/dashboard/companies");
+          }}
           whileHover={{ scale: 1.02, y: -4 }}
           transition={{ duration: 0.2 }}
         >
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-12 h-12 bg-blue-900 rounded-md flex items-center justify-center">
-                <Building2 className="w-6 h-6 text-amber-400" />
+              <div className="size-12 bg-blue-900 rounded-md flex items-center justify-center">
+                <Building2 className="size-6 text-amber-400" />
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-blue-900">Total Companies</p>
+              <p className="text-sm font-medium text-blue-900">
+                Total Companies
+              </p>
               <p className="text-2xl font-bold text-blue-900">
                 <AnimatedCounter value={totalCompanies} />
               </p>
@@ -155,6 +168,9 @@ export default function DashboardPage() {
         <motion.div
           className="bg-white p-6 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl cursor-pointer"
           variants={cardVariants}
+          onClick={() => {
+            router.push("/dashboard/loans");
+          }}
           whileHover={{ scale: 1.02, y: -4 }}
           transition={{ duration: 0.2 }}
         >
@@ -177,6 +193,9 @@ export default function DashboardPage() {
           className="bg-gradient-to-br from-amber-50 to-amber-100 p-6 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl cursor-pointer border-l-4 border-amber-400"
           variants={cardVariants}
           whileHover={{ scale: 1.02, y: -4 }}
+          onClick={() => {
+            router.push("/dashboard/loans?filter=upcoming");
+          }}
           transition={{ duration: 0.2 }}
         >
           <div className="flex items-center">
@@ -186,7 +205,9 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-blue-900">Upcoming (6 months)</p>
+              <p className="text-sm font-medium text-blue-900">
+                Upcoming (6 months)
+              </p>
               <p className="text-2xl font-bold text-blue-900">
                 <AnimatedCounter value={upcomingLoans} />
               </p>
@@ -198,6 +219,9 @@ export default function DashboardPage() {
           className="bg-white p-6 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl cursor-pointer"
           variants={cardVariants}
           whileHover={{ scale: 1.02, y: -4 }}
+          onClick={() => {
+            router.push("/dashboard/loans");
+          }}
           transition={{ duration: 0.2 }}
         >
           <div className="flex items-center">
@@ -207,29 +231,35 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-blue-900">Total Loan Value</p>
-              <p className="text-2xl font-bold text-blue-900">{formatCurrency(totalLoanValue)}</p>
+              <p className="text-sm font-medium text-blue-900">
+                Total Loan Value
+              </p>
+              <p className="text-2xl font-bold text-blue-900">
+                {formatCurrency(totalLoanValue)}
+              </p>
             </div>
           </div>
         </motion.div>
       </motion.div>
 
       {/* Content grid */}
-      <motion.div 
+      <motion.div
         className="grid grid-cols-1 lg:grid-cols-2 gap-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.6 }}
       >
         {/* Urgent alerts */}
-        <motion.div 
+        <motion.div
           className="bg-white rounded-lg shadow-lg"
           whileHover={{ scale: 1.01 }}
           transition={{ duration: 0.2 }}
         >
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium text-blue-900">Urgent Alerts</h2>
+              <h2 className="text-lg font-medium text-blue-900">
+                Urgent Alerts
+              </h2>
               <Link
                 href="/dashboard/alerts"
                 className="text-sm text-blue-700 hover:text-blue-600 transition-colors duration-200"
@@ -242,22 +272,13 @@ export default function DashboardPage() {
             {urgentAlerts.length === 0 ? (
               <p className="text-gray-500">No urgent alerts</p>
             ) : (
-              <motion.div 
+              <motion.div
                 className="space-y-4"
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
               >
-                {urgentAlerts.map((alert, index) => {
-                  const company = companies.find(c => c.id === alert.companyId);
-                  const priorityColors = {
-                    Critical: 'bg-red-100 text-red-800',
-                    High: 'bg-amber-100 text-amber-800',
-                    Medium: 'bg-yellow-100 text-yellow-800',
-                    Low: 'bg-green-100 text-green-800',
-                  };
-
-                  return (
+                {urgentAlerts.map((alert) => (
                     <motion.div
                       key={alert.id}
                       className="border-l-4 border-amber-400 pl-4 hover:bg-amber-50 p-3 rounded-r-lg transition-all duration-200 cursor-pointer"
@@ -268,36 +289,36 @@ export default function DashboardPage() {
                       <div className="flex items-start justify-between">
                         <div>
                           <div className="flex items-center space-x-2">
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${priorityColors[alert.priority]}`}>
-                              {alert.priority}
-                            </span>
-                            <span className="text-sm font-medium text-blue-900">
-                              {company?.name}
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${alert.sentSuccessfully ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}`}>
+                              {alert.alertType}
                             </span>
                           </div>
-                          <p className="mt-1 text-sm text-gray-600">{alert.message}</p>
+                          <p className="mt-1 text-sm text-gray-600">
+                            {alert.daysBeforeMaturity} days before maturity
+                          </p>
                           <p className="mt-1 text-xs text-gray-500">
-                            {alert.daysUntilMaturity} days remaining
+                            {alert.sentAt ? new Date(alert.sentAt).toLocaleDateString() : 'Not sent'}
                           </p>
                         </div>
                       </div>
                     </motion.div>
-                  );
-                })}
+                  ))}
               </motion.div>
             )}
           </div>
         </motion.div>
 
         {/* Recent companies */}
-        <motion.div 
+        <motion.div
           className="bg-white rounded-lg shadow-lg"
           whileHover={{ scale: 1.01 }}
           transition={{ duration: 0.2 }}
         >
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium text-blue-900">Recent Companies</h2>
+              <h2 className="text-lg font-medium text-blue-900">
+                Recent Companies
+              </h2>
               <Link
                 href="/dashboard/companies"
                 className="text-sm text-blue-700 hover:text-blue-600 transition-colors duration-200"
@@ -307,7 +328,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="p-6">
-            <motion.div 
+            <motion.div
               className="space-y-4"
               variants={containerVariants}
               initial="hidden"
@@ -328,13 +349,14 @@ export default function DashboardPage() {
                     >
                       {company.name}
                     </Link>
-                    <p className="text-xs text-gray-500">{company.industry} • {company.location}</p>
+                    <p className="text-xs text-gray-500">
+                      {company.industry} • {company.location}
+                    </p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-medium text-blue-900">
-                      {formatCurrency(company.revenue)}
+                      {company.size}
                     </p>
-                    <p className="text-xs text-gray-500">{company.employees} employees</p>
                   </div>
                 </motion.div>
               ))}

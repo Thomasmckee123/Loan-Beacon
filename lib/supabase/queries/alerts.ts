@@ -10,21 +10,3 @@ export async function getAlerts(supabase: SupabaseClient): Promise<Alert[]> {
   if (error) throw error;
   return (data as AlertRow[]).map(alertFromRow);
 }
-
-export async function dismissAlert(supabase: SupabaseClient, alertId: string): Promise<void> {
-  const { error } = await supabase
-    .from('alert_logs')
-    .update({ dismissed: true })
-    .eq('id', alertId);
-
-  if (error) throw error;
-}
-
-export async function restoreAlert(supabase: SupabaseClient, alertId: string): Promise<void> {
-  const { error } = await supabase
-    .from('alert_logs')
-    .update({ dismissed: false })
-    .eq('id', alertId);
-
-  if (error) throw error;
-}

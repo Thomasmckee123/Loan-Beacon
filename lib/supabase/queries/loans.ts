@@ -26,33 +26,28 @@ export async function createLoan(
   supabase: SupabaseClient,
   loan: {
     companyId: string;
-    type: string;
+    loanType: string;
     amount: number;
     currency: string;
     lender: string;
     originationDate: string;
     maturityDate: string;
     interestRate: number;
-    covenants: string;
     notes: string;
   }
 ): Promise<Loan> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Not authenticated');
-
   const { data, error } = await supabase
     .from('loans')
     .insert({
-      user_id: user.id,
       company_id: loan.companyId,
-      type: loan.type,
+      loan_type: loan.loanType,
       amount: loan.amount,
       currency: loan.currency,
       lender: loan.lender,
       origination_date: loan.originationDate,
       maturity_date: loan.maturityDate,
       interest_rate: loan.interestRate,
-      covenants: loan.covenants,
+      status: 'not_contacted',
       notes: loan.notes,
     })
     .select()

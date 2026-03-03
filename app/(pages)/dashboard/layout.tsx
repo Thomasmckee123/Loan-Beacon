@@ -42,7 +42,7 @@ export default function DashboardLayout({
         const lastName = user.user_metadata?.last_name || "";
         if (firstName || lastName) {
           setUserInitials(
-            `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
+            `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase(),
           );
         } else if (user.email) {
           setUserInitials(user.email.charAt(0).toUpperCase());
@@ -136,7 +136,9 @@ export default function DashboardLayout({
             <div className="flex items-center space-x-2">
               <span className="text-xs text-navy-600">Welcome!</span>
               <div className="w-6 h-6 bg-navy-800 rounded-full flex items-center justify-center">
-                <span className="text-xs font-medium text-white">{userInitials}</span>
+                <span className="text-xs font-medium text-white">
+                  {userInitials}
+                </span>
               </div>
             </div>
           </div>
@@ -187,11 +189,9 @@ export default function DashboardLayout({
         </nav>
       </motion.div>
 
-      {/* Main content */}
       <div className="pl-0 md:pl-64">
-        {/* Header */}
         <motion.div
-          className="bg-white shadow-md border-b border-navy-200 hidden md:block"
+          className="bg-white shadow-md border-b border-navy-200 hidden md:block sticky top-0 z-30"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.1 }}
@@ -226,7 +226,9 @@ export default function DashboardLayout({
                     className="w-8 h-8 bg-navy-800 rounded-full flex items-center justify-center ring-2 ring-transparent hover:ring-gold-400"
                     whileHover={{ scale: 1.1 }}
                   >
-                    <span className="text-xs font-medium text-white">{userInitials}</span>
+                    <span className="text-xs font-medium text-white">
+                      {userInitials}
+                    </span>
                   </motion.div>
                 </div>
               </div>

@@ -5,6 +5,7 @@ export async function getCompanies(supabase: SupabaseClient): Promise<Company[]>
   const { data, error } = await supabase
     .from('companies')
     .select('*')
+    .is('deleted_at', null)
     .order('created_at', { ascending: false });
 
   if (error) throw error;
@@ -16,6 +17,7 @@ export async function getCompany(supabase: SupabaseClient, id: string): Promise<
     .from('companies')
     .select('*')
     .eq('id', id)
+    .is('deleted_at', null)
     .single();
 
   if (error) return null;
@@ -27,35 +29,33 @@ export async function createCompany(
   company: {
     name: string;
     industry: string;
+    size: string;
     location: string;
-    revenue: number;
-    employees: number;
     website: string;
-    contactName: string;
-    contactTitle: string;
-    contactEmail: string;
-    contactPhone: string;
-    notes: string;
   }
 ): Promise<Company> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Not authenticated');
 
+  // Look up the user's team_id from the users table
+  const { data: userData, error: userError } = await supabase
+    .from('users')
+    .select('team_id')
+    .eq('id', user.id)
+    .single();
+
+  if (userError || !userData) throw new Error('User profile not found');
+
   const { data, error } = await supabase
     .from('companies')
     .insert({
       user_id: user.id,
+      team_id: userData.team_id,
       name: company.name,
       industry: company.industry,
+      size: company.size,
       location: company.location,
-      revenue: company.revenue,
-      employees: company.employees,
       website: company.website,
-      contact_name: company.contactName,
-      contact_title: company.contactTitle,
-      contact_email: company.contactEmail,
-      contact_phone: company.contactPhone,
-      notes: company.notes,
     })
     .select()
     .single();

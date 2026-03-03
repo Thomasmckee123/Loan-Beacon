@@ -144,9 +144,9 @@ function Calendar({ loans, companies: companiesData }: { loans: Loan[]; companie
                   return (
                     <motion.div
                       key={loan.id}
-                      className={`text-xs p-1 rounded border ${getStatusColor(loan.status)} cursor-pointer`}
+                      className={`text-xs p-1 rounded border ${getStatusColor(loan.computedStatus)} cursor-pointer`}
                       whileHover={{ scale: 1.05 }}
-                      title={`${company?.name} - ${loan.type} - ${formatCurrency(loan.amount)}`}
+                      title={`${company?.name} - ${loan.loanType} - ${formatCurrency(loan.amount)}`}
                     >
                       <div className="truncate">{company?.name}</div>
                     </motion.div>
@@ -421,7 +421,7 @@ export default function TimelinePage() {
                             return (
                               <motion.div
                                 key={loan.id}
-                                className={`border rounded-lg p-4 ${getStatusColor(loan.status)} transition-all duration-200 hover:shadow-md cursor-pointer`}
+                                className={`border rounded-lg p-4 ${getStatusColor(loan.computedStatus)} transition-all duration-200 hover:shadow-md cursor-pointer`}
                                 variants={itemVariants}
                                 whileHover={{ scale: 1.01, x: 4 }}
                               >
@@ -434,14 +434,14 @@ export default function TimelinePage() {
                                       >
                                         {company?.name}
                                       </Link>
-                                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(loan.status)}`}>
-                                        {loan.status}
+                                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(loan.computedStatus)}`}>
+                                        {loan.computedStatus}
                                       </span>
                                     </div>
                                     <div className="mt-1 grid grid-cols-1 md:grid-cols-4 gap-2 text-sm">
                                       <div>
                                         <span className="text-gray-500">Type:</span>
-                                        <span className="ml-1 text-gray-900">{loan.type}</span>
+                                        <span className="ml-1 text-gray-900">{loan.loanType}</span>
                                       </div>
                                       <div>
                                         <span className="text-gray-500">Lender:</span>
