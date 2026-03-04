@@ -200,7 +200,7 @@ function LoginForm() {
               <span className="text-sm text-navy-600">
                 Don&apos;t have an account?{" "}
                 <Link
-                  href="/register"
+                  href="/signup"
                   className="font-medium text-navy-700 hover:text-gold-600 transition-colors duration-200"
                 >
                   Sign up
