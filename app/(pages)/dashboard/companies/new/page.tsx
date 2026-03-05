@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useCreateCompany } from '@/hooks';
 import Link from 'next/link';
 import Select from 'react-select';
 import { countryOptions } from '@/lib/countries';
 
 export default function NewCompanyPage() {
   const router = useRouter();
+  const createCompanyMutation = useCreateCompany();
   const [formData, setFormData] = useState({
     name: '',
     industry: '',
@@ -42,32 +44,24 @@ export default function NewCompanyPage() {
     });
   };
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      const { createClient } = await import('@/lib/supabase/client');
-      const { createCompany } = await import('@/lib/supabase/queries');
-
-      const supabase = createClient();
-      await createCompany(supabase, {
+    createCompanyMutation.mutate(
+      {
         name: formData.name,
         industry: formData.industry,
         size: formData.size,
         location: formData.location,
         website: formData.website,
-      });
-
-      router.push('/dashboard/companies');
-    } catch (error) {
-      console.error('Error creating company:', error);
-      alert('Failed to create company. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
+      },
+      {
+        onSuccess: () => router.push('/dashboard/companies'),
+        onError: (error) => {
+          console.error('Error creating company:', error);
+          alert('Failed to create company. Please try again.');
+        },
+      }
+    );
   };
 
   return (
@@ -196,10 +190,10 @@ export default function NewCompanyPage() {
           </Link>
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={createCompanyMutation.isPending}
             className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-navy-800 hover:bg-navy-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? 'Adding...' : 'Add Company'}
+            {createCompanyMutation.isPending ? 'Adding...' : 'Add Company'}
           </button>
         </div>
       </form>

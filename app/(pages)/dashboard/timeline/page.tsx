@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { getCompanies, getLoans } from '@/lib/supabase/queries';
+import { useState } from 'react';
+import { useCompanies, useLoans } from '@/hooks';
 import { Company, Loan } from '@/lib/supabase/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import Link from 'next/link';
@@ -183,30 +182,10 @@ function Calendar({ loans, companies: companiesData }: { loans: Loan[]; companie
 }
 
 export default function TimelinePage() {
-  const [companiesData, setCompaniesData] = useState<Company[]>([]);
-  const [loansData, setLoansData] = useState<Loan[]>([]);
+  const { data: companiesData = [], isPending: companiesLoading } = useCompanies();
+  const { data: loansData = [], isPending: loansLoading } = useLoans();
   const [viewMode, setViewMode] = useState<'timeline' | 'calendar'>('timeline');
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const supabase = createClient();
-        const [companies, loans] = await Promise.all([
-          getCompanies(supabase),
-          getLoans(supabase),
-        ]);
-        setCompaniesData(companies);
-        setLoansData(loans);
-      } catch (error) {
-        console.error('Error fetching timeline data:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, []);
+  const loading = companiesLoading || loansLoading;
 
   if (loading) {
     return (

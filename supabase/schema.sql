@@ -150,3 +150,27 @@ create trigger update_companies_updated_at
 create trigger update_loans_updated_at
   before update on public.loans
   for each row execute function update_updated_at_column();
+
+-- ============================================
+-- NOTIFICATIONS SENT TABLE
+-- Tracks which maturity email notifications have been sent
+-- to prevent duplicate emails for the same loan/threshold
+-- ============================================
+create table public.notifications_sent (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  loan_id uuid references public.loans(id) on delete cascade not null,
+  notification_type text not null check (notification_type in ('maturity_30_day')),
+  sent_at timestamptz default now() not null,
+  recipient_email text not null,
+  unique(loan_id, notification_type)
+);
+
+-- RLS for notifications_sent (service role bypasses RLS, but add policies for completeness)
+alter table public.notifications_sent enable row level security;
+
+create policy "Users can view their own notifications"
+  on public.notifications_sent for select
+  using (auth.uid() = user_id);
+
+create index idx_notifications_loan_type on public.notifications_sent(loan_id, notification_type);

@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { getLoans, getAlerts } from "@/lib/supabase/queries";
-import { Loan, Alert } from "@/lib/supabase/types";
+import { useState } from "react";
+import { useLoans, useAlerts } from "@/hooks";
 import { formatDate } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Bell, CheckCircle, XCircle } from "lucide-react";
@@ -28,30 +26,10 @@ const cardVariants = {
 };
 
 export default function AlertsPage() {
-  const [alertList, setAlertList] = useState<Alert[]>([]);
-  const [loansData, setLoansData] = useState<Loan[]>([]);
+  const { data: alertList = [], isPending: alertsLoading } = useAlerts();
+  const { data: loansData = [], isPending: loansLoading } = useLoans();
   const [filter, setFilter] = useState("All");
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const supabase = createClient();
-        const [loans, alertsData] = await Promise.all([
-          getLoans(supabase),
-          getAlerts(supabase),
-        ]);
-        setLoansData(loans);
-        setAlertList(alertsData);
-      } catch (error) {
-        console.error("Error fetching alerts:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, []);
+  const loading = alertsLoading || loansLoading;
 
   if (loading) {
     return (

@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/check-maturity",
+      "schedule": "0 8 * * *"
+    }
+  ]
+}

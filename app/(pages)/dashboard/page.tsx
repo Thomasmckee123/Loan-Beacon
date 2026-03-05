@@ -1,9 +1,7 @@
 "use client";
 
 import { formatCurrency, calculateDaysUntilMaturity } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
-import { getCompanies, getLoans, getAlerts } from "@/lib/supabase/queries";
-import { Company, Loan, Alert } from "@/lib/supabase/types";
+import { useCompanies, useLoans, useAlerts } from "@/hooks";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -59,33 +57,11 @@ const cardVariants = {
 };
 
 export default function DashboardPage() {
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [loans, setLoans] = useState<Loan[]>([]);
-  const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: companies = [], isPending: companiesLoading } = useCompanies();
+  const { data: loans = [], isPending: loansLoading } = useLoans();
+  const { data: alerts = [], isPending: alertsLoading } = useAlerts();
+  const loading = companiesLoading || loansLoading || alertsLoading;
   const router = useRouter();
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const supabase = createClient();
-        const [companiesData, loansData, alertsData] = await Promise.all([
-          getCompanies(supabase),
-          getLoans(supabase),
-          getAlerts(supabase),
-        ]);
-        setCompanies(companiesData);
-        setLoans(loansData);
-        setAlerts(alertsData);
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, []);
 
   if (loading) {
     return (

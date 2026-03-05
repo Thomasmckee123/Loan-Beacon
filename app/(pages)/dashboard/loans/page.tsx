@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { getCompanies, getLoans } from "@/lib/supabase/queries";
-import { Company, Loan } from "@/lib/supabase/types";
+import { useState } from "react";
+import { useCompanies, useLoans } from "@/hooks";
 import {
   formatCurrency,
   formatDate,
@@ -12,31 +10,11 @@ import {
 import Link from "next/link";
 
 export default function LoansPage() {
-  const [companiesData, setCompaniesData] = useState<Company[]>([]);
-  const [loansData, setLoansData] = useState<Loan[]>([]);
+  const { data: companiesData = [], isPending: companiesLoading } = useCompanies();
+  const { data: loansData = [], isPending: loansLoading } = useLoans();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const supabase = createClient();
-        const [companies, loans] = await Promise.all([
-          getCompanies(supabase),
-          getLoans(supabase),
-        ]);
-        setCompaniesData(companies);
-        setLoansData(loans);
-      } catch (error) {
-        console.error("Error fetching loans:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, []);
+  const loading = companiesLoading || loansLoading;
 
   if (loading) {
     return (

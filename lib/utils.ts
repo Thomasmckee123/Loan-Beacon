@@ -37,6 +37,37 @@ export function calculateDaysUntilMaturity(maturityDate: Date | string): number 
 }
 
 /**
+ * Get a consistent color pair (bg + text) for an industry string.
+ * Same industry always returns the same color.
+ */
+const industryColorMap: Record<string, { bg: string; text: string }> = {};
+const industryColors = [
+  { bg: "bg-blue-100", text: "text-blue-800" },
+  { bg: "bg-emerald-100", text: "text-emerald-800" },
+  { bg: "bg-amber-100", text: "text-amber-800" },
+  { bg: "bg-purple-100", text: "text-purple-800" },
+  { bg: "bg-rose-100", text: "text-rose-800" },
+  { bg: "bg-cyan-100", text: "text-cyan-800" },
+  { bg: "bg-orange-100", text: "text-orange-800" },
+  { bg: "bg-indigo-100", text: "text-indigo-800" },
+  { bg: "bg-teal-100", text: "text-teal-800" },
+  { bg: "bg-pink-100", text: "text-pink-800" },
+];
+
+export function getIndustryColor(industry: string): { bg: string; text: string } {
+  if (industryColorMap[industry]) return industryColorMap[industry];
+
+  // Hash the string to get a stable index
+  let hash = 0;
+  for (let i = 0; i < industry.length; i++) {
+    hash = industry.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % industryColors.length;
+  industryColorMap[industry] = industryColors[index];
+  return industryColors[index];
+}
+
+/**
  * Get status based on days until maturity
  */
 export function getLoanStatus(maturityDate: Date): 'Active' | 'Upcoming' | 'Maturing Soon' | 'Matured' {

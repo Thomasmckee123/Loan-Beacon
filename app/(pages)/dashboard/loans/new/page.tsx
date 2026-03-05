@@ -1,15 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import { getCompanies, createLoan } from '@/lib/supabase/queries';
-import { Company } from '@/lib/supabase/types';
+import { useCompanies, useCreateLoan } from '@/hooks';
 import Link from 'next/link';
 
 export default function NewLoanPage() {
   const router = useRouter();
-  const [companiesData, setCompaniesData] = useState<Company[]>([]);
+  const { data: companiesData = [], isPending: loading } = useCompanies();
+  const createLoanMutation = useCreateLoan();
   const [formData, setFormData] = useState({
     companyId: '',
     loanType: '',
@@ -21,24 +20,6 @@ export default function NewLoanPage() {
     interestRate: '',
     notes: ''
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchCompanies() {
-      try {
-        const supabase = createClient();
-        const companies = await getCompanies(supabase);
-        setCompaniesData(companies);
-      } catch (error) {
-        console.error('Error fetching companies:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchCompanies();
-  }, []);
 
   const loanTypes = [
     'Term Loan',
@@ -60,11 +41,8 @@ export default function NewLoanPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      const supabase = createClient();
-      await createLoan(supabase, {
+    createLoanMutation.mutate(
+      {
         companyId: formData.companyId,
         loanType: formData.loanType,
         amount: parseFloat(formData.amount),
@@ -74,15 +52,15 @@ export default function NewLoanPage() {
         maturityDate: formData.maturityDate,
         interestRate: parseFloat(formData.interestRate),
         notes: formData.notes,
-      });
-
-      router.push('/dashboard/loans');
-    } catch (error) {
-      console.error('Error creating loan:', error);
-      alert('Failed to create loan. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
+      },
+      {
+        onSuccess: () => router.push('/dashboard/loans'),
+        onError: (error) => {
+          console.error('Error creating loan:', error);
+          alert('Failed to create loan. Please try again.');
+        },
+      }
+    );
   };
 
   return (
@@ -297,10 +275,10 @@ export default function NewLoanPage() {
           </Link>
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={createLoanMutation.isPending}
             className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-navy-800 hover:bg-navy-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? 'Adding...' : 'Add Loan'}
+            {createLoanMutation.isPending ? 'Adding...' : 'Add Loan'}
           </button>
         </div>
       </form>
