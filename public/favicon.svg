@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="beaconGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D4A843;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#C49A2E;stop-opacity:0.7"/>
+    </linearGradient>
+    <linearGradient id="navyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1B2A4A;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#0F1C36;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <g transform="translate(50, 52)">
+    <line x1="0" y1="-30" x2="-12" y2="-42" stroke="#D4A843" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+    <line x1="0" y1="-30" x2="0" y2="-46" stroke="#D4A843" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+    <line x1="0" y1="-30" x2="12" y2="-42" stroke="#D4A843" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+    <circle cx="0" cy="-27" r="6" fill="url(#beaconGlow)" filter="url(#softGlow)"/>
+    <circle cx="0" cy="-27" r="3" fill="#F0D060" opacity="0.9"/>
+    <path d="M-8,-22 L-11,32 L11,32 L8,-22 Z" fill="url(#navyGrad)"/>
+    <rect x="-9" y="-5" width="18" height="3" rx="1" fill="#D4A843" opacity="0.8"/>
+    <rect x="-10" y="12" width="20" height="3" rx="1" fill="#D4A843" opacity="0.6"/>
+    <rect x="-15" y="30" width="30" height="5" rx="2.5" fill="url(#navyGrad)"/>
+  </g>
+</svg>

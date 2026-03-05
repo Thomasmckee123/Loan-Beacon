@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Landmark, Mail, Lock, User } from 'lucide-react';
+import { Mail, Lock, User } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 export default function RegisterPage() {
@@ -90,11 +90,8 @@ export default function RegisterPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4 }}
           >
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-br from-navy-700 to-navy-900">
-              <Landmark className="w-7 h-7 text-gold-400" />
-            </div>
+            <img src="/loan-beacon-logo.svg" alt="LoanBeacon" className="h-16" />
           </motion.div>
-          <h2 className="text-3xl font-bold text-navy-900">LoanBeacon</h2>
           <p className="mt-2 text-sm text-navy-600">Create your account</p>
         </div>
       </motion.div>

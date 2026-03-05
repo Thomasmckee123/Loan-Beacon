@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Landmark, BarChart3, Building2, Bell, ArrowRight, Shield } from 'lucide-react';
+import { BarChart3, Building2, Bell, ArrowRight, Shield } from 'lucide-react';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -67,9 +67,8 @@ export default function Home() {
         transition={{ duration: 0.5 }}
       >
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-2xl font-bold group">
-            <Landmark className="w-8 h-8 text-gold-400 group-hover:text-gold-300 transition-colors" />
-            <span className="text-white">LoanBeacon</span>
+          <Link href="/" className="flex items-center gap-2 group">
+            <img src="/loan-beacon-logo.svg" alt="LoanBeacon" className="h-10" />
           </Link>
 
           <div className="flex items-center gap-4">
@@ -309,9 +308,8 @@ export default function Home() {
       <footer className="bg-navy-950 border-t border-gold-400/20 px-4 py-12">
         <div className="container mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between mb-8">
-            <Link href="/" className="flex items-center gap-2 text-xl font-bold mb-6 md:mb-0">
-              <Landmark className="w-6 h-6 text-gold-400" />
-              <span>LoanBeacon</span>
+            <Link href="/" className="flex items-center gap-2 mb-6 md:mb-0">
+              <img src="/loan-beacon-logo.svg" alt="LoanBeacon" className="h-8" />
             </Link>
 
             <div className="flex gap-8">

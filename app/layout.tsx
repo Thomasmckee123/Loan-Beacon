@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "LoanBeacon | Debt Advisory Platform",
   description: "Track loan maturities and identify refinancing opportunities. Your comprehensive debt advisory solution.",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

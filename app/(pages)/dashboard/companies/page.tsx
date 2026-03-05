@@ -64,9 +64,12 @@ export default function CompaniesPage() {
       <TableHeader
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
-        industryFilter={industryFilter}
-        setIndustryFilter={setIndustryFilter}
-        industries={industries}
+        searchPlaceholder="Search by name or location..."
+        searchLabel="Search Companies"
+        filterValue={industryFilter}
+        setFilterValue={setIndustryFilter}
+        filterOptions={industries}
+        filterLabel="Filter by Industry"
       />
 
       <Table

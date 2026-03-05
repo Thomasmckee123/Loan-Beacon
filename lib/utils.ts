@@ -54,7 +54,7 @@ const industryColors = [
   { bg: "bg-pink-100", text: "text-pink-800" },
 ];
 
-export function getIndustryColor(industry: string): { bg: string; text: string } {
+export function randomColor(industry: string): { bg: string; text: string } {
   if (industryColorMap[industry]) return industryColorMap[industry];
 
   // Hash the string to get a stable index
@@ -68,6 +68,38 @@ export function getIndustryColor(industry: string): { bg: string; text: string }
 }
 
 /**
+ * Get color pair for company size.
+ */
+const sizeColors: Record<string, { bg: string; text: string }> = {
+  Small: { bg: "bg-sky-100", text: "text-sky-800" },
+  Medium: { bg: "bg-amber-100", text: "text-amber-800" },
+  Large: { bg: "bg-violet-100", text: "text-violet-800" },
+  Enterprise: { bg: "bg-rose-100", text: "text-rose-800" },
+};
+
+const defaultSizeColor = { bg: "bg-gray-100", text: "text-gray-800" };
+
+export function getSizeColor(size: string): { bg: string; text: string } {
+  return sizeColors[size] ?? defaultSizeColor;
+}
+
+/**
+ * Get color pair for loan status.
+ */
+const statusColors: Record<string, { bg: string; text: string }> = {
+  Active: { bg: "bg-green-100", text: "text-green-800" },
+  Upcoming: { bg: "bg-navy-100", text: "text-navy-800" },
+  "Maturing Soon": { bg: "bg-orange-100", text: "text-orange-800" },
+  Matured: { bg: "bg-red-100", text: "text-red-800" },
+};
+
+const defaultStatusColor = { bg: "bg-gray-100", text: "text-gray-800" };
+
+export function getStatusColor(status: string): { bg: string; text: string } {
+  return statusColors[status] ?? defaultStatusColor;
+}
+
+/**
  * Get status based on days until maturity
  */
 export function getLoanStatus(maturityDate: Date): 'Active' | 'Upcoming' | 'Maturing Soon' | 'Matured' {
@@ -77,4 +109,8 @@ export function getLoanStatus(maturityDate: Date): 'Active' | 'Upcoming' | 'Matu
   if (daysUntil <= 30) return 'Maturing Soon';
   if (daysUntil <= 180) return 'Upcoming';
   return 'Active';
+}
+
+export function getLoanDetails(loanType: string, lender: string): string {
+  return `${loanType} loan from ${lender}`;
 }

@@ -1,27 +1,35 @@
 import { Input } from "../../InputField/components/Input";
+
 interface TableHeaderProps {
   searchTerm: string;
   setSearchTerm: (value: string) => void;
-  industryFilter: string;
-  setIndustryFilter: (value: string) => void;
-  industries: string[];
+  searchPlaceholder?: string;
+  searchLabel?: string;
+  filterValue: string;
+  setFilterValue: (value: string) => void;
+  filterOptions: string[];
+  filterLabel?: string;
 }
-const TableSettings = ({
+
+const TableHeader = ({
   searchTerm,
   setSearchTerm,
-  industryFilter,
-  setIndustryFilter,
-  industries,
+  searchPlaceholder = "Search...",
+  searchLabel = "Search",
+  filterValue,
+  setFilterValue,
+  filterOptions,
+  filterLabel = "Filter",
 }: TableHeaderProps) => {
   return (
-    <div className="bg-white px-10 rounded-full shadow-2xl">
+    <div className="bg-white px-10 rounded-4xl shadow-2xl">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="pb-5">
           <Input>
             <Input.Text
               id="search"
-              placeholder="Search by name or location..."
-              label="Search"
+              placeholder={searchPlaceholder}
+              label={searchLabel}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -30,11 +38,11 @@ const TableSettings = ({
         <div className="pb-5">
           <Input>
             <Input.Select
-              id="industry"
-              label="Filter by Industry"
-              value={industryFilter}
-              options={industries}
-              onChange={(value) => setIndustryFilter(value)}
+              id="filter"
+              label={filterLabel}
+              value={filterValue}
+              options={filterOptions}
+              onChange={(value) => setFilterValue(value)}
             />
           </Input>
         </div>
@@ -43,4 +51,4 @@ const TableSettings = ({
   );
 };
 
-export default TableSettings;
+export default TableHeader;

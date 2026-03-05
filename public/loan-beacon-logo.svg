@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200">
+  <defs>
+    <linearGradient id="beaconGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D4A843;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#C49A2E;stop-opacity:0.7" />
+    </linearGradient>
+    <linearGradient id="navyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1B2A4A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0F1C36;stop-opacity:1" />
+    </linearGradient>
+    <!-- Glow filter for the beacon light -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Beacon Icon -->
+  <g transform="translate(55, 100)">
+    <!-- Light rays emanating from top -->
+    <line x1="0" y1="-52" x2="-22" y2="-72" stroke="#D4A843" stroke-width="2" stroke-linecap="round" opacity="0.5" />
+    <line x1="0" y1="-52" x2="0" y2="-78" stroke="#D4A843" stroke-width="2.5" stroke-linecap="round" opacity="0.6" />
+    <line x1="0" y1="-52" x2="22" y2="-72" stroke="#D4A843" stroke-width="2" stroke-linecap="round" opacity="0.5" />
+    <line x1="0" y1="-52" x2="-35" y2="-60" stroke="#D4A843" stroke-width="1.5" stroke-linecap="round" opacity="0.3" />
+    <line x1="0" y1="-52" x2="35" y2="-60" stroke="#D4A843" stroke-width="1.5" stroke-linecap="round" opacity="0.3" />
+
+    <!-- Beacon light (gold circle at top) -->
+    <circle cx="0" cy="-48" r="8" fill="url(#beaconGlow)" filter="url(#softGlow)" />
+    <circle cx="0" cy="-48" r="4" fill="#F0D060" opacity="0.9" />
+
+    <!-- Lighthouse/beacon tower - modern minimal -->
+    <path d="M-10,-40 L-14,40 L14,40 L10,-40 Z" fill="url(#navyGrad)" rx="2" />
+
+    <!-- Horizontal accent bands -->
+    <rect x="-11" y="-15" width="22" height="3" rx="1" fill="#D4A843" opacity="0.8" />
+    <rect x="-12.5" y="10" width="25" height="3" rx="1" fill="#D4A843" opacity="0.6" />
+
+    <!-- Base -->
+    <rect x="-20" y="38" width="40" height="6" rx="3" fill="url(#navyGrad)" />
+  </g>
+
+  <!-- Text: LOAN BEACON -->
+  <g transform="translate(110, 80)">
+    <!-- LOAN -->
+    <text x="0" y="0" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="42" font-weight="700" letter-spacing="4" fill="#FFFFFF">LOAN</text>
+    <!-- BEACON -->
+    <text x="0" y="38" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="42" font-weight="300" letter-spacing="6" fill="#D4A843">BEACON</text>
+  </g>
+
+  <!-- Subtle tagline divider -->
+  <line x1="112" y1="128" x2="280" y2="128" stroke="#D4A843" stroke-width="1" opacity="0.4" />
+</svg>

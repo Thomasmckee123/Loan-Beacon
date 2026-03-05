@@ -76,8 +76,7 @@ export default function DashboardLayout({
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.2 }}
           >
-            <h1 className="text-xl font-bold text-white">LoanBeacon</h1>
-            <div className="ml-3 w-1 h-6 bg-gold-400 rounded-full"></div>
+            <img src="/loan-beacon-logo.svg" alt="LoanBeacon" className="h-10" />
           </motion.div>
 
           {/* Navigation */}
@@ -132,7 +131,7 @@ export default function DashboardLayout({
       >
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-lg font-bold text-navy-900">LoanBeacon</h1>
+            <img src="/loan-beacon-logo.svg" alt="LoanBeacon" className="h-8" />
             <div className="flex items-center space-x-2">
               <span className="text-xs text-navy-600">Welcome!</span>
               <div className="w-6 h-6 bg-navy-800 rounded-full flex items-center justify-center">
