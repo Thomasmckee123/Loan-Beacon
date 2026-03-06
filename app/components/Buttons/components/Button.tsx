@@ -5,9 +5,9 @@ type Variant = "primary" | "cancel";
 
 const variantStyles: Record<Variant, string> = {
   primary:
-    "border border-transparent text-white bg-navy-800 hover:bg-navy-900 focus:ring-navy-500 shadow-sm",
+    "border border-transparent text-white bg-navy-800 hover:bg-navy-900 focus:ring-navy-500 shadow-sm hover:cursor-pointer",
   cancel:
-    "border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 focus:ring-navy-500 shadow-sm",
+    "border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 focus:ring-navy-500 shadow-sm hover:cursor-pointer",
 };
 
 type BaseProps = {
@@ -60,7 +60,7 @@ export default function Button({
       disabled={loading || buttonProps.disabled}
       {...buttonProps}
     >
-      {loading ? loadingText ?? children : children}
+      {loading ? (loadingText ?? children) : children}
     </button>
   );
 }

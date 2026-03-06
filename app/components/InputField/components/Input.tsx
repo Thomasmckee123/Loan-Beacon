@@ -16,7 +16,7 @@ type InputRootProps = {
   className?: string;
 };
 
-type TextInputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "type"> & {
+type TextInputProps = InputHTMLAttributes<HTMLInputElement> & {
   label?: string;
 };
 
@@ -32,7 +32,13 @@ function InputRoot({ children, className = "p-2" }: InputRootProps) {
   return <div className={className}>{children}</div>;
 }
 
-function TextInput({ className, label, id, ...props }: TextInputProps) {
+function TextInput({
+  className,
+  label,
+  id,
+  type = "text",
+  ...props
+}: TextInputProps) {
   return (
     <>
       {label && (
@@ -44,7 +50,7 @@ function TextInput({ className, label, id, ...props }: TextInputProps) {
         </label>
       )}
       <input
-        type="text"
+        type={type}
         id={id}
         className={`border border-gray-300 rounded-full p-2 w-full ${className ?? ""}`}
         {...props}

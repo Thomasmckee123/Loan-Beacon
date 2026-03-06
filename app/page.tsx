@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { BarChart3, Building2, Bell, ArrowRight, Shield } from 'lucide-react';
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { BarChart3, Building2, Bell, ArrowRight, Shield } from "lucide-react";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5 }
-  }
+    transition: { duration: 0.5 },
+  },
 };
 
 const staggerContainer = {
@@ -20,9 +20,9 @@ const staggerContainer = {
     opacity: 1,
     transition: {
       staggerChildren: 0.1,
-      delayChildren: 0.2
-    }
-  }
+      delayChildren: 0.2,
+    },
+  },
 };
 
 const Counter = ({ end, label }: { end: number; label: string }) => {
@@ -68,18 +68,22 @@ export default function Home() {
       >
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group">
-            <img src="/loan-beacon-logo.svg" alt="LoanBeacon" className="h-14" />
+            <img
+              src="/loan-beacon-logo.svg"
+              alt="LoanBeacon"
+              className="h-14"
+            />
           </Link>
 
           <div className="flex items-center gap-4">
             <Link
-              href="/login"
+              href="/signup"
               className="text-white hover:text-gold-400 transition-colors font-medium"
             >
               Sign In
             </Link>
             <Link
-              href="/register"
+              href="/signup"
               className="bg-gold-400 hover:bg-gold-500 text-navy-900 font-semibold px-6 py-2 rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-gold-400/50"
             >
               Get Started
@@ -122,7 +126,9 @@ export default function Home() {
               className="text-xl md:text-2xl text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed"
               variants={fadeInUp}
             >
-              Track loan maturities and identify refinancing opportunities 3-6 months in advance. Your comprehensive platform for intelligent debt advisory and portfolio management.
+              Track loan maturities and identify refinancing opportunities 3-6
+              months in advance. Your comprehensive platform for intelligent
+              debt advisory and portfolio management.
             </motion.p>
 
             <motion.div
@@ -200,7 +206,8 @@ export default function Home() {
                 Track Maturities
               </h3>
               <p className="text-gray-600 leading-relaxed">
-                Monitor loan maturity dates and get intelligent alerts 3-6 months in advance to plan your refinancing strategies.
+                Monitor loan maturity dates and get intelligent alerts 3-6
+                months in advance to plan your refinancing strategies.
               </p>
             </motion.div>
 
@@ -217,7 +224,8 @@ export default function Home() {
                 Company Portfolio
               </h3>
               <p className="text-gray-600 leading-relaxed">
-                Manage client companies and their loan portfolios with comprehensive financial metrics and performance tracking.
+                Manage client companies and their loan portfolios with
+                comprehensive financial metrics and performance tracking.
               </p>
             </motion.div>
 
@@ -234,7 +242,8 @@ export default function Home() {
                 Smart Alerts
               </h3>
               <p className="text-gray-600 leading-relaxed">
-                Get priority-based alerts for refinancing opportunities, covenant monitoring, and critical portfolio events.
+                Get priority-based alerts for refinancing opportunities,
+                covenant monitoring, and critical portfolio events.
               </p>
             </motion.div>
           </motion.div>
@@ -284,7 +293,9 @@ export default function Home() {
               className="text-xl text-gray-300 mb-10"
               variants={fadeInUp}
             >
-              Join hundreds of financial professionals already using LoanBeacon to optimize their refinancing strategies and maximize financial performance.
+              Join hundreds of financial professionals already using LoanBeacon
+              to optimize their refinancing strategies and maximize financial
+              performance.
             </motion.p>
 
             <motion.div
@@ -309,24 +320,40 @@ export default function Home() {
         <div className="container mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between mb-8">
             <Link href="/" className="flex items-center gap-2 mb-6 md:mb-0">
-              <img src="/loan-beacon-logo.svg" alt="LoanBeacon" className="h-12" />
+              <img
+                src="/loan-beacon-logo.svg"
+                alt="LoanBeacon"
+                className="h-12"
+              />
             </Link>
 
             <div className="flex gap-8">
-              <Link href="#" className="text-gray-400 hover:text-gold-400 transition-colors text-sm">
+              <Link
+                href="#"
+                className="text-gray-400 hover:text-gold-400 transition-colors text-sm"
+              >
                 Privacy Policy
               </Link>
-              <Link href="#" className="text-gray-400 hover:text-gold-400 transition-colors text-sm">
+              <Link
+                href="#"
+                className="text-gray-400 hover:text-gold-400 transition-colors text-sm"
+              >
                 Terms of Service
               </Link>
-              <Link href="#" className="text-gray-400 hover:text-gold-400 transition-colors text-sm">
+              <Link
+                href="#"
+                className="text-gray-400 hover:text-gold-400 transition-colors text-sm"
+              >
                 Contact
               </Link>
             </div>
           </div>
 
           <div className="border-t border-gold-400/20 pt-8 text-center text-gray-400 text-sm">
-            <p>&copy; 2026 LoanBeacon. All rights reserved. Premium Debt Advisory Platform.</p>
+            <p>
+              &copy; 2026 LoanBeacon. All rights reserved. Premium Debt Advisory
+              Platform.
+            </p>
           </div>
         </div>
       </footer>
