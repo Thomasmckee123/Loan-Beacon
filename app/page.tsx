@@ -77,7 +77,7 @@ export default function Home() {
 
           <div className="flex items-center gap-4">
             <Link
-              href="/signup"
+              href="/login"
               className="text-white hover:text-gold-400 transition-colors font-medium"
             >
               Sign In

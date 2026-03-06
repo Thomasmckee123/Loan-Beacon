@@ -36,8 +36,12 @@ export default function DashboardLayout({
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
+    // Use getSession() instead of getUser() to avoid a network call to Supabase.
+    // Session data from the JWT contains user metadata and email, which is all
+    // we need here for display purposes.
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        const user = session.user;
         const firstName = user.user_metadata?.first_name || "";
         const lastName = user.user_metadata?.last_name || "";
         if (firstName || lastName) {
