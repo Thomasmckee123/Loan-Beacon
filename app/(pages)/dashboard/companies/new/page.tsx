@@ -1,46 +1,49 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useCreateCompany } from '@/hooks';
-import Link from 'next/link';
-import Select from 'react-select';
-import { countryOptions } from '@/lib/countries';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCreateCompany } from "@/hooks";
+import { useSnackbar } from "@/app/components/Snackbar";
+import Link from "next/link";
+import { Button } from "@/app/components/Buttons";
+import Select from "react-select";
+import { countryOptions } from "@/lib/countries";
+import { Input } from "@/app/components/InputField";
 
 export default function NewCompanyPage() {
   const router = useRouter();
   const createCompanyMutation = useCreateCompany();
+  const { showSnackbar } = useSnackbar();
   const [formData, setFormData] = useState({
-    name: '',
-    industry: '',
-    size: '',
-    location: '',
-    website: '',
+    name: "",
+    industry: "",
+    size: "",
+    location: "",
+    website: "",
   });
 
   const industries = [
-    'Technology',
-    'Manufacturing',
-    'Healthcare',
-    'Retail',
-    'Energy',
-    'Finance',
-    'Real Estate',
-    'Transportation',
-    'Other'
+    "Technology",
+    "Manufacturing",
+    "Healthcare",
+    "Retail",
+    "Energy",
+    "Finance",
+    "Real Estate",
+    "Transportation",
+    "Other",
   ];
 
-  const companySizes = [
-    'Small',
-    'Mid-Market',
-    'Large',
-    'Enterprise'
-  ];
+  const companySizes = ["Small", "Mid-Market", "Large", "Enterprise"];
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -55,12 +58,15 @@ export default function NewCompanyPage() {
         website: formData.website,
       },
       {
-        onSuccess: () => router.push('/dashboard/companies'),
-        onError: (error) => {
-          console.error('Error creating company:', error);
-          alert('Failed to create company. Please try again.');
+        onSuccess: () => {
+          showSnackbar("Company created successfully!");
+          router.push("/dashboard/companies");
         },
-      }
+        onError: (error) => {
+          console.error("Error creating company:", error);
+          showSnackbar("Failed to create company. Please try again.", "error");
+        },
+      },
     );
   };
 
@@ -78,123 +84,94 @@ export default function NewCompanyPage() {
 
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Add New Company</h1>
-        <p className="text-gray-600">Enter company information to add to your portfolio</p>
+        <p className="text-gray-600">
+          Enter company information to add to your portfolio
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Company Information */}
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Company Information</h2>
+        <div className="px-6 py-4 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input>
+              <Input.Text
+                id="company-nameID"
+                placeholder="Company Name"
+                className="bg-white"
+                label="Comany"
+                value={formData.name}
+                onChange={handleChange}
+              />
+            </Input>
+            <Input>
+              <Input.Select
+                id="company-industryID"
+                label="Industry"
+                value={formData.industry}
+                options={industries}
+                onChange={(value) =>
+                  setFormData({ ...formData, industry: value })
+                }
+              />
+            </Input>
           </div>
-          <div className="px-6 py-4 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                  Company Name *
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  id="name"
-                  required
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
-                />
-              </div>
-              <div>
-                <label htmlFor="industry" className="block text-sm font-medium text-gray-700">
-                  Industry *
-                </label>
-                <select
-                  name="industry"
-                  id="industry"
-                  required
-                  value={formData.industry}
-                  onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
-                >
-                  <option value="">Select industry</option>
-                  {industries.map(industry => (
-                    <option key={industry} value={industry}>{industry}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="size" className="block text-sm font-medium text-gray-700">
-                  Company Size *
-                </label>
-                <select
-                  name="size"
-                  id="size"
-                  required
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Input>
+                <Input.Select
+                  id="company-size"
+                  label="Company Size"
                   value={formData.size}
-                  onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
-                >
-                  <option value="">Select size</option>
-                  {companySizes.map(size => (
-                    <option key={size} value={size}>{size}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="website" className="block text-sm font-medium text-gray-700">
-                  Website
-                </label>
-                <input
-                  type="url"
-                  name="website"
+                  options={companySizes}
+                  onChange={(value) =>
+                    setFormData({ ...formData, size: value })
+                  }
+                />
+              </Input>
+            </div>
+            <div>
+              <Input>
+                <Input.Text
                   id="website"
                   placeholder="https://..."
+                  className="bg-white"
+                  label="Website"
                   value={formData.website}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-navy-500 focus:border-navy-500"
                 />
-              </div>
+              </Input>
             </div>
+          </div>
 
-            <div>
-              <label htmlFor="location" className="block text-sm font-medium text-gray-700">
-                Country *
-              </label>
-              <Select
-                inputId="location"
-                options={countryOptions}
-                value={countryOptions.find((o) => o.value === formData.location) || null}
-                onChange={(option) =>
-                  setFormData({ ...formData, location: option?.value || '' })
+          <div>
+            <Input>
+              <Input.Select
+                id="location"
+                placeholder="Country"
+                label="Country"
+                value={formData.location}
+                options={countryOptions.map((c) => c.label)}
+                onChange={(value) =>
+                  setFormData({ ...formData, location: value })
                 }
-                placeholder="Select a country..."
-                isClearable
-                classNames={{
-                  control: () => 'mt-1 !border-gray-300 !rounded-md !shadow-sm',
-                  menu: () => '!z-50',
-                }}
               />
-            </div>
+            </Input>
           </div>
         </div>
 
         {/* Form actions */}
         <div className="flex justify-end space-x-3">
-          <Link
-            href="/dashboard/companies"
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-500"
-          >
+          <Button variant="cancel" href="/dashboard/companies">
             Cancel
-          </Link>
-          <button
+          </Button>
+          <Button
             type="submit"
-            disabled={createCompanyMutation.isPending}
-            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-navy-800 hover:bg-navy-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            loading={createCompanyMutation.isPending}
+            loadingText="Adding..."
           >
-            {createCompanyMutation.isPending ? 'Adding...' : 'Add Company'}
-          </button>
+            Add Company
+          </Button>
         </div>
       </form>
     </div>

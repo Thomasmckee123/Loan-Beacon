@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Mail, Lock } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useSnackbar } from "@/app/components/Snackbar";
 
 export default function LoginPage() {
   return (
@@ -18,28 +19,24 @@ export default function LoginPage() {
 function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { showSnackbar } = useSnackbar();
 
   useEffect(() => {
-    // Check for error or message in URL params
     const errorParam = searchParams.get("error");
     const messageParam = searchParams.get("message");
 
     if (errorParam) {
-      setError(decodeURIComponent(errorParam));
+      showSnackbar(decodeURIComponent(errorParam), "error");
     } else if (messageParam) {
-      setSuccessMessage(decodeURIComponent(messageParam));
+      showSnackbar(decodeURIComponent(messageParam));
     }
-  }, [searchParams]);
+  }, [searchParams, showSnackbar]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setSuccessMessage("");
     setLoading(true);
 
     try {
@@ -51,17 +48,18 @@ function LoginForm() {
       });
 
       if (signInError) {
-        setError(signInError.message);
+        showSnackbar(signInError.message, "error");
         setLoading(false);
         return;
       }
 
-      // Success - redirect to dashboard
+      showSnackbar("Signed in successfully!");
       router.push("/dashboard");
       router.refresh();
     } catch (err) {
-      setError(
+      showSnackbar(
         err instanceof Error ? err.message : "An error occurred during sign in",
+        "error",
       );
       setLoading(false);
     }
@@ -82,7 +80,7 @@ function LoginForm() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4 }}
           >
-            <img src="/loan-beacon-logo.svg" alt="LoanBeacon" className="h-16" />
+            <img src="/loan-beacon-logo.svg" alt="LoanBeacon" className="h-24" />
           </motion.div>
           <p className="mt-2 text-sm text-navy-600">Sign in to your account</p>
         </div>
@@ -95,26 +93,6 @@ function LoginForm() {
         transition={{ duration: 0.4, delay: 0.1 }}
       >
         <div className="bg-white py-8 px-4 shadow-lg sm:rounded-lg sm:px-10 border border-navy-100">
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md"
-            >
-              <p className="text-sm text-red-800">{error}</p>
-            </motion.div>
-          )}
-
-          {successMessage && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md"
-            >
-              <p className="text-sm text-green-800">{successMessage}</p>
-            </motion.div>
-          )}
-
           <form className="space-y-6" onSubmit={handleSubmit}>
             <motion.div
               initial={{ opacity: 0, x: -20 }}

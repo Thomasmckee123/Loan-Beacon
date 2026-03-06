@@ -13,6 +13,7 @@ type OptionType = { label: string; value: string };
 
 type InputRootProps = {
   children: ReactNode;
+  className?: string;
 };
 
 type TextInputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "type"> & {
@@ -27,9 +28,8 @@ type SelectInputProps = {
   label?: string;
   placeholder?: string;
 };
-
-function InputRoot({ children }: InputRootProps) {
-  return <div className="p-2">{children}</div>;
+function InputRoot({ children, className = "p-2" }: InputRootProps) {
+  return <div className={className}>{children}</div>;
 }
 
 function TextInput({ className, label, id, ...props }: TextInputProps) {

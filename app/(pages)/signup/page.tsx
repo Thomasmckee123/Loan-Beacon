@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Mail, Lock, User } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { useSnackbar } from '@/app/components/Snackbar';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -15,10 +16,10 @@ export default function RegisterPage() {
     password: '',
     confirmPassword: ''
   });
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const router = useRouter();
+  const { showSnackbar } = useSnackbar();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -29,19 +30,16 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
-    // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      showSnackbar('Passwords do not match', 'warning');
       setLoading(false);
       return;
     }
 
-    // Validate password length
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      showSnackbar('Password must be at least 6 characters long', 'warning');
       setLoading(false);
       return;
     }
@@ -61,16 +59,16 @@ export default function RegisterPage() {
       });
 
       if (signUpError) {
-        setError(signUpError.message);
+        showSnackbar(signUpError.message, 'error');
         setLoading(false);
         return;
       }
 
-      // Success - show confirmation message
+      showSnackbar('Account created! Check your email to confirm.');
       setSuccess(true);
       setLoading(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred during sign up');
+      showSnackbar(err instanceof Error ? err.message : 'An error occurred during sign up', 'error');
       setLoading(false);
     }
   };
@@ -90,7 +88,7 @@ export default function RegisterPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4 }}
           >
-            <img src="/loan-beacon-logo.svg" alt="LoanBeacon" className="h-16" />
+            <img src="/loan-beacon-logo.svg" alt="LoanBeacon" className="h-24" />
           </motion.div>
           <p className="mt-2 text-sm text-navy-600">Create your account</p>
         </div>
@@ -103,16 +101,6 @@ export default function RegisterPage() {
         transition={{ duration: 0.4, delay: 0.1 }}
       >
         <div className="bg-white py-8 px-4 shadow-lg sm:rounded-lg sm:px-10 border border-navy-100">
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md"
-            >
-              <p className="text-sm text-red-800">{error}</p>
-            </motion.div>
-          )}
-
           {success ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}

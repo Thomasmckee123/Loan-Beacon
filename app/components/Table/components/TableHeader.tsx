@@ -1,14 +1,19 @@
 import { Input } from "../../InputField/components/Input";
 
+export interface Filter {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: string[];
+}
+
 interface TableHeaderProps {
   searchTerm: string;
   setSearchTerm: (value: string) => void;
   searchPlaceholder?: string;
   searchLabel?: string;
-  filterValue: string;
-  setFilterValue: (value: string) => void;
-  filterOptions: string[];
-  filterLabel?: string;
+  filters: Filter[];
 }
 
 const TableHeader = ({
@@ -16,37 +21,36 @@ const TableHeader = ({
   setSearchTerm,
   searchPlaceholder = "Search...",
   searchLabel = "Search",
-  filterValue,
-  setFilterValue,
-  filterOptions,
-  filterLabel = "Filter",
+  filters,
 }: TableHeaderProps) => {
   return (
-    <div className="bg-white px-10 rounded-4xl shadow-2xl">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="pb-5">
-          <Input>
-            <Input.Text
-              id="search"
-              placeholder={searchPlaceholder}
-              label={searchLabel}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </Input>
-        </div>
-        <div className="pb-5">
+    <div className="flex flex-col md:flex-row gap-2">
+      <div className="flex-1">
+        <Input>
+          <Input.Text
+            id="search"
+            placeholder={searchPlaceholder}
+            label={searchLabel}
+            className="bg-white"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </Input>
+      </div>
+
+      {filters.map((filter) => (
+        <div key={filter.id} className="flex-1">
           <Input>
             <Input.Select
-              id="filter"
-              label={filterLabel}
-              value={filterValue}
-              options={filterOptions}
-              onChange={(value) => setFilterValue(value)}
+              id={filter.id}
+              label={filter.label}
+              value={filter.value}
+              options={filter.options}
+              onChange={(value) => filter.onChange(value)}
             />
           </Input>
         </div>
-      </div>
+      ))}
     </div>
   );
 };

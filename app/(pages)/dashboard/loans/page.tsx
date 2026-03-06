@@ -5,7 +5,13 @@ import { useCompanies, useLoans } from "@/hooks";
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Table, TableHeader, loanColumns, LoanRow } from "@/app/components/Table";
+import {
+  Table,
+  TableHeader,
+  loanColumns,
+  LoanRow,
+  Filter,
+} from "@/app/components/Table";
 
 export default function LoansPage() {
   const router = useRouter();
@@ -14,6 +20,7 @@ export default function LoansPage() {
   const { data: loansData = [], isPending: loansLoading } = useLoans();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [loanTypeFilter, setLoanTypeFilter] = useState("All");
   const loading = companiesLoading || loansLoading;
 
   if (loading) {
@@ -25,6 +32,10 @@ export default function LoansPage() {
   }
 
   const statuses = ["All", "Active", "Upcoming", "Maturing Soon", "Matured"];
+  const loanTypes = [
+    "All",
+    ...new Set(loansData.map((l) => l.loanType)),
+  ];
 
   const filteredLoans: LoanRow[] = loansData
     .filter((loan) => {
@@ -35,7 +46,9 @@ export default function LoansPage() {
         loan.loanType.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus =
         statusFilter === "All" || loan.computedStatus === statusFilter;
-      return matchesSearch && matchesStatus;
+      const matchesLoanType =
+        loanTypeFilter === "All" || loan.loanType === loanTypeFilter;
+      return matchesSearch && matchesStatus && matchesLoanType;
     })
     .map((loan) => {
       const company = companiesData.find((c) => c.id === loan.companyId);
@@ -108,10 +121,22 @@ export default function LoansPage() {
         setSearchTerm={setSearchTerm}
         searchPlaceholder="Search by company, lender, or loan type..."
         searchLabel="Search Loans"
-        filterValue={statusFilter}
-        setFilterValue={setStatusFilter}
-        filterOptions={statuses}
-        filterLabel="Filter by Status"
+        filters={[
+          {
+            id: "status",
+            label: "Status",
+            value: statusFilter,
+            onChange: setStatusFilter,
+            options: statuses,
+          },
+          {
+            id: "loanType",
+            label: "Loan Type",
+            value: loanTypeFilter,
+            onChange: setLoanTypeFilter,
+            options: loanTypes,
+          },
+        ]}
       />
 
       <Table

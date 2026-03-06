@@ -9,6 +9,7 @@ import {
   TableHeader,
   companyColumns,
   CompanyRow,
+  Filter,
 } from "@/app/components/Table";
 
 export default function CompaniesPage() {
@@ -18,6 +19,8 @@ export default function CompaniesPage() {
   const { data: loansData = [], isPending: loansLoading } = useLoans();
   const [searchTerm, setSearchTerm] = useState("");
   const [industryFilter, setIndustryFilter] = useState("All");
+  const [sizeFilter, setSizeFilter] = useState("All");
+  const [locationFilter, setLocationFilter] = useState("All");
   const loading = companiesLoading || loansLoading;
 
   if (loading) {
@@ -29,6 +32,8 @@ export default function CompaniesPage() {
   }
 
   const industries = ["All", ...new Set(companiesData.map((c) => c.industry))];
+  const sizes = ["All", ...new Set(companiesData.map((c) => c.size))];
+  const locations = ["All", ...new Set(companiesData.map((c) => c.location))];
 
   const filteredCompanies: CompanyRow[] = companiesData
     .filter((company) => {
@@ -37,12 +42,40 @@ export default function CompaniesPage() {
         company.location.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesIndustry =
         industryFilter === "All" || company.industry === industryFilter;
-      return matchesSearch && matchesIndustry;
+      const matchesSize =
+        sizeFilter === "All" || company.size === sizeFilter;
+      const matchesLocation =
+        locationFilter === "All" || company.location === locationFilter;
+      return matchesSearch && matchesIndustry && matchesSize && matchesLocation;
     })
     .map((company) => ({
       ...company,
       loans: loansData.filter((loan) => loan.companyId === company.id),
     }));
+
+  const filters: Filter[] = [
+    {
+      id: "industry",
+      label: "Industry",
+      value: industryFilter,
+      onChange: setIndustryFilter,
+      options: industries,
+    },
+    {
+      id: "size",
+      label: "Size",
+      value: sizeFilter,
+      onChange: setSizeFilter,
+      options: sizes,
+    },
+    {
+      id: "location",
+      label: "Location",
+      value: locationFilter,
+      onChange: setLocationFilter,
+      options: locations,
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -66,10 +99,7 @@ export default function CompaniesPage() {
         setSearchTerm={setSearchTerm}
         searchPlaceholder="Search by name or location..."
         searchLabel="Search Companies"
-        filterValue={industryFilter}
-        setFilterValue={setIndustryFilter}
-        filterOptions={industries}
-        filterLabel="Filter by Industry"
+        filters={filters}
       />
 
       <Table

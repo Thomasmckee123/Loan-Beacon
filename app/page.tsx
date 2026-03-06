@@ -68,7 +68,7 @@ export default function Home() {
       >
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group">
-            <img src="/loan-beacon-logo.svg" alt="LoanBeacon" className="h-10" />
+            <img src="/loan-beacon-logo.svg" alt="LoanBeacon" className="h-14" />
           </Link>
 
           <div className="flex items-center gap-4">
@@ -309,7 +309,7 @@ export default function Home() {
         <div className="container mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between mb-8">
             <Link href="/" className="flex items-center gap-2 mb-6 md:mb-0">
-              <img src="/loan-beacon-logo.svg" alt="LoanBeacon" className="h-8" />
+              <img src="/loan-beacon-logo.svg" alt="LoanBeacon" className="h-12" />
             </Link>
 
             <div className="flex gap-8">
