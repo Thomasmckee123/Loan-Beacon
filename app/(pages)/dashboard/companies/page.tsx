@@ -11,6 +11,7 @@ import {
   CompanyRow,
   Filter,
 } from "@/app/components/Table";
+import { StatCard } from "@/app/components/StatCard";
 
 export default function CompaniesPage() {
   const router = useRouter();
@@ -94,11 +95,25 @@ export default function CompaniesPage() {
         </Link>
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <StatCard
+          value={filteredCompanies.length}
+          label="Total Companies"
+        />
+        <StatCard
+          value={filteredCompanies.reduce((sum, c) => sum + c.loans.length, 0)}
+          label="Total Loans"
+        />
+        <StatCard
+          value={new Set(filteredCompanies.map((c) => c.industry)).size}
+          label="Industries"
+        />
+      </div>
+
       <TableHeader
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         searchPlaceholder="Search by name or location..."
-        searchLabel="Search Companies"
         filters={filters}
       />
 

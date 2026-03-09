@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { useCompanies, useLoans } from "@/hooks";
 import { Company, Loan } from "@/lib/supabase/types";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar as CalendarIcon, ArrowLeft, ArrowRight } from "lucide-react";
+import { StatCard } from "@/app/components/StatCard";
+import { TimelineCard } from "@/app/components/TimelineCard";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -262,21 +264,6 @@ export default function TimelinePage() {
   // Sort by date
   const sortedPeriods = Object.keys(groupedLoans).sort();
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Active":
-        return "bg-gray-100 text-gray-800 border-gray-300";
-      case "Upcoming":
-        return "bg-gray-100 text-gray-600 border-gray-300";
-      case "Maturing Soon":
-        return "bg-red-100 text-red-800 border-red-300";
-      case "Matured":
-        return "bg-red-200 text-red-900 border-red-400";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-300";
-    }
-  };
-
   const getMonthName = (yearMonth: string) => {
     const [year, month] = yearMonth.split("-");
     const date = new Date(parseInt(year), parseInt(month) - 1);
@@ -335,50 +322,35 @@ export default function TimelinePage() {
           </motion.button>
         </div>
       </motion.div>
-
-      {/* Summary stats */}
       <motion.div
         className="grid grid-cols-1 md:grid-cols-3 gap-6"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
-        <motion.div
-          className="bg-white p-6 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl"
+        <StatCard
+          value={loansData.length}
+          label="Total Loans Tracked"
           variants={itemVariants}
-          whileHover={{ scale: 1.02, y: -4 }}
-        >
-          <div className="text-center">
-            <p className="text-2xl font-bold text-gray-900">
-              {loansData.length}
-            </p>
-            <p className="text-sm text-gray-500">Total Loans Tracked</p>
-          </div>
-        </motion.div>
-        <motion.div
-          className="bg-gradient-to-br from-amber-50 to-amber-100 p-6 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl border-l-4 border-amber-400"
+        />
+        <StatCard
+          value={
+            loansData.filter((l) => l.computedStatus === "Maturing Soon").length
+          }
+          label="Maturing Soon (≤30 days)"
+          valueClassName="text-amber-600"
+          labelClassName="text-amber-700"
+          className="bg-gradient-to-br from-amber-50 to-amber-100 border-l-4 border-amber-400"
           variants={itemVariants}
-          whileHover={{ scale: 1.02, y: -4 }}
-        >
-          <div className="text-center">
-            <p className="text-2xl font-bold text-amber-600">
-              {loansData.filter((l) => l.status === "Maturing Soon").length}
-            </p>
-            <p className="text-sm text-amber-700">Maturing Soon (≤30 days)</p>
-          </div>
-        </motion.div>
-        <motion.div
-          className="bg-white p-6 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl"
+        />
+        <StatCard
+          value={
+            loansData.filter((l) => l.computedStatus === "Upcoming").length
+          }
+          label="Upcoming (≤6 months)"
+          valueClassName="text-gray-600"
           variants={itemVariants}
-          whileHover={{ scale: 1.02, y: -4 }}
-        >
-          <div className="text-center">
-            <p className="text-2xl font-bold text-gray-600">
-              {loansData.filter((l) => l.status === "Upcoming").length}
-            </p>
-            <p className="text-sm text-gray-500">Upcoming (≤6 months)</p>
-          </div>
-        </motion.div>
+        />
       </motion.div>
 
       {/* View Content */}
@@ -386,187 +358,107 @@ export default function TimelinePage() {
         {viewMode === "timeline" ? (
           <motion.div
             key="timeline"
-            className="space-y-8"
+            className="relative"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            transition={{ duration: 0.4, delay: 0.6 }}
+            transition={{ duration: 0.4, delay: 0.4 }}
           >
-            {sortedPeriods.map((period, index) => {
-              const periodLoans = groupedLoans[period];
-              const totalValue = periodLoans.reduce(
-                (sum, loan) => sum + loan.amount,
-                0,
-              );
+            {/* Vertical timeline rail */}
+            {sortedPeriods.length > 0 && (
+              <div className="absolute left-5 top-0 bottom-0 w-px bg-gradient-to-b from-blue-900 via-blue-400 to-transparent" />
+            )}
 
-              return (
-                <motion.div
-                  key={period}
-                  className="relative"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.4, delay: 0.1 * index }}
-                >
-                  {/* Timeline line */}
-                  {index !== sortedPeriods.length - 1 && (
-                    <motion.div
-                      className="absolute left-6 top-16 w-0.5 h-full bg-blue-900"
-                      initial={{ height: 0 }}
-                      animate={{ height: "100%" }}
-                      transition={{ duration: 0.6, delay: 0.2 * index }}
-                    ></motion.div>
-                  )}
+            <div className="space-y-10">
+              {sortedPeriods.map((period, index) => {
+                const periodLoans = groupedLoans[period];
+                const totalValue = periodLoans.reduce(
+                  (sum, loan) => sum + loan.amount,
+                  0,
+                );
 
-                  {/* Timeline marker */}
-                  <div className="flex items-start">
-                    <motion.div
-                      className="flex-shrink-0 w-12 h-12 bg-blue-900 rounded-full flex items-center justify-center z-10 shadow-lg"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ duration: 0.4, delay: 0.2 * index }}
-                      whileHover={{ scale: 1.1 }}
-                    >
-                      <CalendarIcon className="w-5 h-5 text-white" />
-                    </motion.div>
+                return (
+                  <motion.div
+                    key={period}
+                    className="relative"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.1 * index }}
+                  >
+                    {/* Month marker dot */}
+                    <div className="absolute left-5 -translate-x-1/2 top-1 z-10">
+                      <div className="size-10 rounded-full bg-blue-900 flex items-center justify-center shadow-lg ring-4 ring-white">
+                        <CalendarIcon className="size-4 text-amber-400" />
+                      </div>
+                    </div>
 
-                    <div className="ml-6 flex-1">
-                      {/* Period header */}
+                    {/* Month content */}
+                    <div className="ml-16">
+                      <div className="flex items-baseline justify-between mb-4">
+                        <h3 className="text-lg font-bold text-gray-900">
+                          {getMonthName(period)}
+                        </h3>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                            {periodLoans.length}{" "}
+                            {periodLoans.length === 1 ? "loan" : "loans"}
+                          </span>
+                          <span className="text-sm font-semibold text-gray-700 bg-gray-100 px-3 py-1 rounded-full">
+                            {formatCurrency(totalValue)}
+                          </span>
+                        </div>
+                      </div>
+
                       <motion.div
-                        className="bg-white rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl"
-                        whileHover={{ scale: 1.01 }}
+                        className="space-y-3"
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="visible"
                       >
-                        <div className="px-6 py-4 border-b border-gray-200">
-                          <div className="flex items-center justify-between">
-                            <h3 className="text-lg font-medium text-gray-900">
-                              {getMonthName(period)}
-                            </h3>
-                            <div className="text-right">
-                              <p className="text-sm text-gray-500">
-                                {periodLoans.length} loans •{" "}
-                                {formatCurrency(totalValue)}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Loans for this period */}
-                        <div className="px-6 py-4">
-                          <motion.div
-                            className="space-y-4"
-                            variants={containerVariants}
-                            initial="hidden"
-                            animate="visible"
-                          >
-                            {periodLoans
-                              .sort(
-                                (a, b) =>
-                                  new Date(a.maturityDate).getTime() -
-                                  new Date(b.maturityDate).getTime(),
-                              )
-                              .map((loan, loanIndex) => {
-                                const company = companiesData.find(
-                                  (c) => c.id === loan.companyId,
-                                );
-
-                                return (
-                                  <motion.div
-                                    key={loan.id}
-                                    className={`border rounded-lg p-4 ${getStatusColor(loan.computedStatus)} transition-all duration-200 hover:shadow-md cursor-pointer`}
-                                    variants={itemVariants}
-                                    whileHover={{ scale: 1.01, x: 4 }}
-                                  >
-                                    <div className="flex items-start justify-between">
-                                      <div className="flex-1">
-                                        <div className="flex items-center space-x-3">
-                                          <Link
-                                            href={`/dashboard/companies/${company?.id}`}
-                                            className="font-medium text-gray-900 hover:text-blue-900 transition-colors duration-200"
-                                          >
-                                            {company?.name}
-                                          </Link>
-                                          <span
-                                            className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(loan.computedStatus)}`}
-                                          >
-                                            {loan.computedStatus}
-                                          </span>
-                                        </div>
-                                        <div className="mt-1 grid grid-cols-1 md:grid-cols-4 gap-2 text-sm">
-                                          <div>
-                                            <span className="text-gray-500">
-                                              Type:
-                                            </span>
-                                            <span className="ml-1 text-gray-900">
-                                              {loan.loanType}
-                                            </span>
-                                          </div>
-                                          <div>
-                                            <span className="text-gray-500">
-                                              Lender:
-                                            </span>
-                                            <span className="ml-1 text-gray-900">
-                                              {loan.lender}
-                                            </span>
-                                          </div>
-                                          <div>
-                                            <span className="text-gray-500">
-                                              Amount:
-                                            </span>
-                                            <span className="ml-1 text-gray-900">
-                                              {formatCurrency(loan.amount)}
-                                            </span>
-                                          </div>
-                                          <div>
-                                            <span className="text-gray-500">
-                                              Rate:
-                                            </span>
-                                            <span className="ml-1 text-gray-900">
-                                              {loan.interestRate}%
-                                            </span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="text-right ml-4">
-                                        <div className="text-sm font-medium text-gray-900">
-                                          {formatDate(loan.maturityDate)}
-                                        </div>
-                                        {loan.notes && (
-                                          <div className="text-xs text-gray-500 mt-1">
-                                            {loan.notes.length > 50
-                                              ? `${loan.notes.substring(0, 50)}...`
-                                              : loan.notes}
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </motion.div>
-                                );
-                              })}
-                          </motion.div>
-                        </div>
+                        {periodLoans
+                          .sort(
+                            (a, b) =>
+                              new Date(a.maturityDate).getTime() -
+                              new Date(b.maturityDate).getTime(),
+                          )
+                          .map((loan) => {
+                            const company = companiesData.find(
+                              (c) => c.id === loan.companyId,
+                            );
+                            return (
+                              <TimelineCard
+                                key={loan.id}
+                                loan={loan}
+                                company={company}
+                                variants={itemVariants}
+                              />
+                            );
+                          })}
                       </motion.div>
                     </div>
-                  </div>
-                </motion.div>
-              );
-            })}
+                  </motion.div>
+                );
+              })}
+            </div>
 
-            {/* Empty state for timeline */}
             {sortedPeriods.length === 0 && (
               <motion.div
-                className="text-center py-12"
+                className="text-center py-16"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
               >
-                <div className="text-gray-400 text-6xl mb-4">📅</div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <div className="size-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CalendarIcon className="size-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">
                   No loans to display
                 </h3>
                 <p className="text-gray-500">
                   Add some loans to see them on the timeline.{" "}
                   <Link
                     href="/dashboard/loans/new"
-                    className="text-blue-900 hover:text-blue-700 transition-colors duration-200"
+                    className="text-blue-900 hover:text-blue-700 font-medium transition-colors"
                   >
                     Add your first loan
                   </Link>

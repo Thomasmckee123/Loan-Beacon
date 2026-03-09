@@ -20,18 +20,16 @@ const TableHeader = ({
   searchTerm,
   setSearchTerm,
   searchPlaceholder = "Search...",
-  searchLabel = "Search",
   filters,
 }: TableHeaderProps) => {
   return (
-    <div className="flex flex-col md:flex-row gap-2">
-      <div className="flex-1">
-        <Input>
+    <div className="flex flex-col md:flex-row md:items-center gap-2">
+      <div className="flex-1 min-w-0">
+        <Input className="">
           <Input.Text
             id="search"
             placeholder={searchPlaceholder}
-            label={searchLabel}
-            className="bg-white"
+            className="bg-white text-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -39,11 +37,11 @@ const TableHeader = ({
       </div>
 
       {filters.map((filter) => (
-        <div key={filter.id} className="flex-1">
-          <Input>
+        <div key={filter.id} className="md:w-44 shrink-0">
+          <Input className="">
             <Input.Select
               id={filter.id}
-              label={filter.label}
+              placeholder={filter.label}
               value={filter.value}
               options={filter.options}
               onChange={(value) => filter.onChange(value)}

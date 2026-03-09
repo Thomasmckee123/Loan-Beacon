@@ -76,9 +76,11 @@ const selectStyles: StylesConfig<OptionType> = {
   control: (base) => ({
     ...base,
     borderRadius: "9999px",
-    padding: "4px 8px",
+    padding: "0px 4px",
+    minHeight: "38px",
     borderColor: "#d1d5db",
     boxShadow: "none",
+    fontSize: "0.875rem",
     "&:hover": { borderColor: "#9ca3af" },
   }),
   indicatorSeparator: () => ({ display: "none" }),

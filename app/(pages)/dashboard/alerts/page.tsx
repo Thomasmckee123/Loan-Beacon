@@ -5,6 +5,7 @@ import { useLoans, useAlerts } from "@/hooks";
 import { formatDate } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Bell, CheckCircle, XCircle } from "lucide-react";
+import { StatCard } from "@/app/components/StatCard";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -16,11 +17,11 @@ const containerVariants = {
   },
 };
 
-const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
+const itemVariants = {
+  hidden: { opacity: 0, x: -20 },
   visible: {
     opacity: 1,
-    y: 0,
+    x: 0,
     transition: { duration: 0.4 },
   },
 };
@@ -45,9 +46,6 @@ export default function AlertsPage() {
     if (filter === "All") return true;
     return alert.alertType === filter;
   });
-
-  const sentAlerts = filteredAlerts.filter((a) => a.sentSuccessfully);
-  const failedAlerts = filteredAlerts.filter((a) => !a.sentSuccessfully);
 
   return (
     <motion.div
@@ -74,123 +72,122 @@ export default function AlertsPage() {
         initial="hidden"
         animate="visible"
       >
-        <motion.div
-          className="bg-white p-6 rounded-lg shadow-lg"
-          variants={cardVariants}
-          whileHover={{ scale: 1.02, y: -4 }}
-        >
-          <div className="flex items-center space-x-3">
-            <Bell className="w-8 h-8 text-blue-900" />
-            <div>
-              <p className="text-2xl font-bold text-gray-900">{alertList.length}</p>
-              <p className="text-sm text-gray-500">Total Alerts</p>
-            </div>
-          </div>
-        </motion.div>
-        <motion.div
-          className="bg-green-50 p-6 rounded-lg shadow-lg border-l-4 border-green-500"
-          variants={cardVariants}
-          whileHover={{ scale: 1.02, y: -4 }}
-        >
-          <div className="flex items-center space-x-3">
-            <CheckCircle className="w-8 h-8 text-green-600" />
-            <div>
-              <p className="text-2xl font-bold text-green-600">
-                {alertList.filter((a) => a.sentSuccessfully).length}
-              </p>
-              <p className="text-sm text-green-700">Sent Successfully</p>
-            </div>
-          </div>
-        </motion.div>
-        <motion.div
-          className="bg-red-50 p-6 rounded-lg shadow-lg border-l-4 border-red-500"
-          variants={cardVariants}
-          whileHover={{ scale: 1.02, y: -4 }}
-        >
-          <div className="flex items-center space-x-3">
-            <XCircle className="w-8 h-8 text-red-600" />
-            <div>
-              <p className="text-2xl font-bold text-red-600">
-                {alertList.filter((a) => !a.sentSuccessfully).length}
-              </p>
-              <p className="text-sm text-red-700">Failed</p>
-            </div>
-          </div>
-        </motion.div>
+        <StatCard
+          value={alertList.length}
+          label="Total Alerts"
+          icon={<Bell className="w-6 h-6 text-white" />}
+          variants={itemVariants}
+        />
+        <StatCard
+          value={alertList.filter((a) => a.sentSuccessfully).length}
+          label="Sent Successfully"
+          icon={<CheckCircle className="w-6 h-6 text-white" />}
+          className="bg-gradient-to-br from-green-50 to-green-100 border-l-4 border-green-500"
+          valueClassName="text-green-600"
+          labelClassName="text-green-700"
+          variants={itemVariants}
+        />
+        <StatCard
+          value={alertList.filter((a) => !a.sentSuccessfully).length}
+          label="Failed"
+          icon={<XCircle className="w-6 h-6 text-white" />}
+          className="bg-gradient-to-br from-red-50 to-red-100 border-l-4 border-red-500"
+          valueClassName="text-red-600"
+          labelClassName="text-red-700"
+          variants={itemVariants}
+        />
       </motion.div>
 
-      {/* Filter */}
-      <div className="bg-white p-6 rounded-lg shadow-lg">
-        <div className="flex items-center space-x-4">
-          <label htmlFor="type-filter" className="text-sm font-medium text-gray-700">
-            Filter by Type:
-          </label>
-          <select
-            id="type-filter"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-900 focus:border-blue-900"
+      {/* Filter pills */}
+      <div className="flex flex-wrap items-center gap-2">
+        {alertTypes.map((type) => (
+          <button
+            key={type}
+            onClick={() => setFilter(type)}
+            className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-200 ${
+              filter === type
+                ? "bg-navy-800 text-white shadow-sm"
+                : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300 hover:text-gray-900"
+            }`}
           >
-            {alertTypes.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
-        </div>
+            {type}
+          </button>
+        ))}
       </div>
 
       {/* Alert list */}
-      <div className="bg-white shadow-lg rounded-lg">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">
-            Alert History ({filteredAlerts.length})
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
+            Alert History
           </h2>
+          <span className="text-sm text-gray-400">
+            {filteredAlerts.length} {filteredAlerts.length === 1 ? "alert" : "alerts"}
+          </span>
         </div>
 
         {filteredAlerts.length === 0 ? (
-          <div className="px-6 py-12 text-center">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 px-6 py-12 text-center">
+            <Bell className="w-10 h-10 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500">No alert logs found.</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
+          <motion.div
+            className="space-y-3"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
             {filteredAlerts.map((alert) => {
               const loan = loansData.find((l) => l.id === alert.loanId);
 
               return (
                 <motion.div
                   key={alert.id}
-                  className={`px-6 py-4 border-l-4 ${alert.sentSuccessfully ? "border-green-500" : "border-red-500"} hover:bg-gray-50 transition-all duration-200`}
+                  className={`bg-white border-l-4 ${
+                    alert.sentSuccessfully ? "border-l-green-500" : "border-l-red-500"
+                  } rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200`}
+                  variants={itemVariants}
                   whileHover={{ x: 4 }}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${alert.sentSuccessfully ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span
+                          className={`px-2.5 py-0.5 text-xs font-semibold rounded-full whitespace-nowrap ${
+                            alert.sentSuccessfully
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
                           {alert.sentSuccessfully ? "Sent" : "Failed"}
                         </span>
-                        <span className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-full">
+                        <span className="px-2.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-full whitespace-nowrap">
                           {alert.alertType}
                         </span>
                       </div>
                       {loan && (
-                        <p className="text-sm text-gray-900 mb-1">
-                          {loan.loanType} - {loan.lender}
+                        <p className="text-sm font-medium text-gray-900 mb-1">
+                          {loan.loanType} &middot; {loan.lender}
                         </p>
                       )}
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-500">
                         {alert.daysBeforeMaturity} days before maturity
                       </p>
                     </div>
-                    <div className="text-right text-sm text-gray-500">
-                      <p>{alert.sentAt ? formatDate(new Date(alert.sentAt)) : "Not sent"}</p>
-                      <p className="text-xs">Created: {formatDate(new Date(alert.createdAt))}</p>
+                    <div className="text-right shrink-0">
+                      <p className="text-sm font-medium text-gray-900">
+                        {alert.sentAt ? formatDate(new Date(alert.sentAt)) : "Not sent"}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Created {formatDate(new Date(alert.createdAt))}
+                      </p>
                     </div>
                   </div>
                 </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         )}
       </div>
     </motion.div>

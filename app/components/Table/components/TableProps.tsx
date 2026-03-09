@@ -21,6 +21,7 @@ export interface TableProps<T> {
   rowKey: (row: T) => string;
   emptyMessage?: string;
   onRowClick?: (row: T) => void;
+  getRowBorderColor?: (row: T) => string;
 }
 
 export type CompanyRow = Company & { loans: Loan[] };
@@ -32,7 +33,7 @@ export const companyColumns: Column<CompanyRow>[] = [
     header: "Company",
     accessor: (row) => (
       <div>
-        <div className="text-xl font-medium text-navy-700 hover:text-navy-600">
+        <div className="text-md font-medium text-navy-700 hover:text-navy-600">
           {row.name}
         </div>
         <div className="text-sm text-gray-500">{row.location}</div>
@@ -46,7 +47,7 @@ export const companyColumns: Column<CompanyRow>[] = [
       const color = randomColor(row.industry);
       return (
         <span
-          className={`p-3 inline-flex text-md leading-5 font-semibold rounded-full ${color.bg} ${color.text}`}
+          className={`p-2 inline-flex text-sm leading-5 font-semibold rounded-full ${color.bg} ${color.text}`}
         >
           {row.industry}
         </span>
@@ -60,7 +61,7 @@ export const companyColumns: Column<CompanyRow>[] = [
       const color = getSizeColor(row.size);
       return (
         <span
-          className={`p-3 inline-flex text-md leading-5 font-semibold rounded-full ${color.bg} ${color.text}`}
+          className={`p-2 inline-flex text-sm leading-5 font-semibold rounded-full ${color.bg} ${color.text}`}
         >
           {row.size}
         </span>
@@ -74,8 +75,8 @@ export const companyColumns: Column<CompanyRow>[] = [
       const totalAmount = row.loans.reduce((sum, loan) => sum + loan.amount, 0);
       return (
         <div>
-          <div className="text-lg text-gray-900">{row.loans.length} loans</div>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-900">{row.loans.length} loans</div>
+          <div className="text-xs text-gray-500">
             {formatCurrency(totalAmount)} total
           </div>
         </div>
@@ -90,10 +91,10 @@ export const loanColumns: Column<LoanRow>[] = [
     header: "Company",
     accessor: (row) => (
       <div>
-        <div className="text-xl font-medium text-navy-700">
+        <div className="text-sm font-medium text-navy-700">
           {row.companyName}
         </div>
-        <div className="text-sm text-gray-500">{row.companyIndustry}</div>
+        <div className="text-xs text-gray-500">{row.companyIndustry}</div>
       </div>
     ),
   },
@@ -103,7 +104,7 @@ export const loanColumns: Column<LoanRow>[] = [
     accessor: (row) => (
       <div>
         <div className="text-sm font-medium text-gray-900">{row.loanType}</div>
-        <div className="text-sm text-gray-500">{row.lender}</div>
+        <div className="text-xs text-gray-500">{row.lender}</div>
       </div>
     ),
   },
@@ -130,7 +131,7 @@ export const loanColumns: Column<LoanRow>[] = [
             {formatDate(row.maturityDate)}
           </div>
           <div
-            className={`text-sm ${daysUntil < 30 ? "text-red-600" : "text-gray-500"}`}
+            className={`text-sm font-medium ${daysUntil < 30 ? "text-red-600" : "text-gray-500"}`}
           >
             {daysUntil > 0 ? `${daysUntil} days` : "Overdue"}
           </div>
@@ -145,7 +146,7 @@ export const loanColumns: Column<LoanRow>[] = [
       const color = getStatusColor(row.computedStatus);
       return (
         <span
-          className={`p-3 inline-flex text-md leading-5 font-semibold rounded-full ${color.bg} ${color.text}`}
+          className={`p-3 inline-flex text-sm leading-5 font-semibold rounded-full whitespace-nowrap ${color.bg} ${color.text}`}
         >
           {row.computedStatus}
         </span>

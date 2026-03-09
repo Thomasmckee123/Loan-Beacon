@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useCompanies, useLoans } from "@/hooks";
 import { formatCurrency } from "@/lib/utils";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import {
   Table,
   TableHeader,
@@ -12,6 +12,34 @@ import {
   LoanRow,
   Filter,
 } from "@/app/components/Table";
+import { StatCard } from "@/app/components/StatCard";
+import { Button } from "@/app/components/Buttons";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, x: -20 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.4 },
+  },
+};
+
+const statusBorderColors: Record<string, string> = {
+  Active: "border-l-green-500",
+  Upcoming: "border-l-navy-500",
+  "Maturing Soon": "border-l-orange-500",
+  Matured: "border-l-red-500",
+};
 
 export default function LoansPage() {
   const router = useRouter();
@@ -65,62 +93,51 @@ export default function LoansPage() {
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <motion.div
+      className="space-y-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <motion.div
+        className="flex justify-between items-center"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Loans</h1>
           <p className="text-gray-600">
             Monitor loan portfolios and maturity dates
           </p>
         </div>
-        <Link
-          href="/dashboard/loans/new"
-          className="bg-navy-800 text-white px-4 py-2 rounded-md hover:bg-navy-900 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2"
-        >
-          Add Loan
-        </Link>
-      </div>
+        <Button href="/dashboard/loans/new">Add Loan</Button>
+      </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-4 rounded-lg shadow">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-gray-900">
-              {filteredLoans.length}
-            </p>
-            <p className="text-sm text-gray-500">Total Loans</p>
-          </div>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-gray-900">
-              {formatCurrency(totalLoanValue)}
-            </p>
-            <p className="text-sm text-gray-500">Total Value</p>
-          </div>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-gray-900">
-              {filteredLoans.filter((l) => l.computedStatus === "Maturing Soon").length}
-            </p>
-            <p className="text-sm text-gray-500">Maturing Soon</p>
-          </div>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-gray-900">
-              {filteredLoans.filter((l) => l.computedStatus === "Active").length}
-            </p>
-            <p className="text-sm text-gray-500">Active</p>
-          </div>
-        </div>
-      </div>
+      <motion.div
+        className="grid grid-cols-1 md:grid-cols-4 gap-6"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <StatCard value={filteredLoans.length} label="Total Loans" variants={itemVariants} />
+        <StatCard value={formatCurrency(totalLoanValue)} label="Total Value" variants={itemVariants} />
+        <StatCard
+          value={filteredLoans.filter((l) => l.computedStatus === "Maturing Soon").length}
+          label="Maturing Soon"
+          variants={itemVariants}
+        />
+        <StatCard
+          value={filteredLoans.filter((l) => l.computedStatus === "Active").length}
+          label="Active"
+          variants={itemVariants}
+        />
+      </motion.div>
 
       <TableHeader
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         searchPlaceholder="Search by company, lender, or loan type..."
-        searchLabel="Search Loans"
         filters={[
           {
             id: "status",
@@ -145,7 +162,8 @@ export default function LoansPage() {
         rowKey={(row) => row.id}
         onRowClick={(row) => router.push(`/dashboard/companies/${row.companyId}`)}
         emptyMessage="No loans found matching your criteria."
+        getRowBorderColor={(row) => statusBorderColors[row.computedStatus] ?? "border-l-gray-300"}
       />
-    </div>
+    </motion.div>
   );
 }

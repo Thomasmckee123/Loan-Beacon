@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Building2, Banknote, Clock, DollarSign } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { StatCard } from "@/app/components/StatCard";
 
 // Animated counter component
 function AnimatedCounter({
@@ -115,107 +116,43 @@ export default function DashboardPage() {
         initial="hidden"
         animate="visible"
       >
-        <motion.div
-          className="bg-white p-6 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl cursor-pointer"
+        <StatCard
+          value={<AnimatedCounter value={totalCompanies} />}
+          label="Total Companies"
+          icon={<Building2 className="size-6 text-amber-400" />}
+          valueClassName="text-blue-900"
+          labelClassName="text-blue-900"
           variants={cardVariants}
-          onClick={() => {
-            router.push("/dashboard/companies");
-          }}
-          whileHover={{ scale: 1.02, y: -4 }}
-          transition={{ duration: 0.2 }}
-        >
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="size-12 bg-blue-900 rounded-md flex items-center justify-center">
-                <Building2 className="size-6 text-amber-400" />
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-blue-900">
-                Total Companies
-              </p>
-              <p className="text-2xl font-bold text-blue-900">
-                <AnimatedCounter value={totalCompanies} />
-              </p>
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          className="bg-white p-6 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl cursor-pointer"
+          onClick={() => router.push("/dashboard/companies")}
+        />
+        <StatCard
+          value={<AnimatedCounter value={activeLoans} />}
+          label="Active Loans"
+          icon={<Banknote className="size-6 text-amber-400" />}
+          valueClassName="text-blue-900"
+          labelClassName="text-blue-900"
           variants={cardVariants}
-          onClick={() => {
-            router.push("/dashboard/loans");
-          }}
-          whileHover={{ scale: 1.02, y: -4 }}
-          transition={{ duration: 0.2 }}
-        >
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-12 h-12 bg-blue-900 rounded-md flex items-center justify-center">
-                <Banknote className="w-6 h-6 text-amber-400" />
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-blue-900">Active Loans</p>
-              <p className="text-2xl font-bold text-blue-900">
-                <AnimatedCounter value={activeLoans} />
-              </p>
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          className="bg-gradient-to-br from-amber-50 to-amber-100 p-6 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl cursor-pointer border-l-4 border-amber-400"
+          onClick={() => router.push("/dashboard/loans")}
+        />
+        <StatCard
+          value={<AnimatedCounter value={upcomingLoans} />}
+          label="Upcoming (6 months)"
+          icon={<Clock className="size-6 text-amber-400" />}
+          valueClassName="text-blue-900"
+          labelClassName="text-blue-900"
+          className="bg-gradient-to-br from-amber-50 to-amber-100 border-l-4 border-amber-400"
           variants={cardVariants}
-          whileHover={{ scale: 1.02, y: -4 }}
-          onClick={() => {
-            router.push("/dashboard/loans?filter=upcoming");
-          }}
-          transition={{ duration: 0.2 }}
-        >
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-12 h-12 bg-blue-900 rounded-md flex items-center justify-center">
-                <Clock className="w-6 h-6 text-amber-400" />
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-blue-900">
-                Upcoming (6 months)
-              </p>
-              <p className="text-2xl font-bold text-blue-900">
-                <AnimatedCounter value={upcomingLoans} />
-              </p>
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          className="bg-white p-6 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl cursor-pointer"
+          onClick={() => router.push("/dashboard/loans?filter=upcoming")}
+        />
+        <StatCard
+          value={formatCurrency(totalLoanValue)}
+          label="Total Loan Value"
+          icon={<DollarSign className="size-6 text-amber-400" />}
+          valueClassName="text-blue-900"
+          labelClassName="text-blue-900"
           variants={cardVariants}
-          whileHover={{ scale: 1.02, y: -4 }}
-          onClick={() => {
-            router.push("/dashboard/loans");
-          }}
-          transition={{ duration: 0.2 }}
-        >
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-12 h-12 bg-blue-900 rounded-md flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-amber-400" />
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-blue-900">
-                Total Loan Value
-              </p>
-              <p className="text-2xl font-bold text-blue-900">
-                {formatCurrency(totalLoanValue)}
-              </p>
-            </div>
-          </div>
-        </motion.div>
+          onClick={() => router.push("/dashboard/loans")}
+        />
       </motion.div>
 
       {/* Content grid */}
