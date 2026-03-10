@@ -280,21 +280,13 @@ export default function TimelinePage() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Page header */}
+      {/* View Toggle */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="flex justify-between items-center"
+        className="flex justify-end"
       >
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Timeline</h1>
-          <p className="text-gray-600">
-            Visual timeline of loan maturity dates
-          </p>
-        </div>
-
-        {/* View Toggle */}
         <div className="flex bg-gray-100 rounded-lg p-1">
           <motion.button
             onClick={() => setViewMode("timeline")}
@@ -369,7 +361,7 @@ export default function TimelinePage() {
               <div className="absolute left-5 top-0 bottom-0 w-px bg-gradient-to-b from-blue-900 via-blue-400 to-transparent" />
             )}
 
-            <div className="space-y-10">
+            <div className="space-y-6">
               {sortedPeriods.map((period, index) => {
                 const periodLoans = groupedLoans[period];
                 const totalValue = periodLoans.reduce(
@@ -386,16 +378,17 @@ export default function TimelinePage() {
                     transition={{ duration: 0.5, delay: 0.1 * index }}
                   >
                     {/* Month marker dot */}
-                    <div className="absolute left-5 -translate-x-1/2 top-1 z-10">
+                    <div className="absolute left-5 -translate-x-1/2 top-5 z-10">
                       <div className="size-10 rounded-full bg-blue-900 flex items-center justify-center shadow-lg ring-4 ring-white">
                         <CalendarIcon className="size-4 text-amber-400" />
                       </div>
                     </div>
 
-                    {/* Month content */}
-                    <div className="ml-16">
-                      <div className="flex items-baseline justify-between mb-4">
-                        <h3 className="text-lg font-bold text-gray-900">
+                    {/* Month card */}
+                    <div className="ml-16 bg-white rounded-lg shadow-lg overflow-hidden">
+                      {/* Month header */}
+                      <div className="px-6 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+                        <h3 className="text-sm font-semibold text-blue-900">
                           {getMonthName(period)}
                         </h3>
                         <div className="flex items-center gap-3">
@@ -403,14 +396,15 @@ export default function TimelinePage() {
                             {periodLoans.length}{" "}
                             {periodLoans.length === 1 ? "loan" : "loans"}
                           </span>
-                          <span className="text-sm font-semibold text-gray-700 bg-gray-100 px-3 py-1 rounded-full">
+                          <span className="text-xs font-semibold text-gray-700 bg-white px-3 py-1 rounded-full border border-gray-200">
                             {formatCurrency(totalValue)}
                           </span>
                         </div>
                       </div>
 
+                      {/* Loans list */}
                       <motion.div
-                        className="space-y-3"
+                        className="divide-y divide-gray-100"
                         variants={containerVariants}
                         initial="hidden"
                         animate="visible"

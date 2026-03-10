@@ -43,8 +43,7 @@ export default function CompaniesPage() {
         company.location.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesIndustry =
         industryFilter === "All" || company.industry === industryFilter;
-      const matchesSize =
-        sizeFilter === "All" || company.size === sizeFilter;
+      const matchesSize = sizeFilter === "All" || company.size === sizeFilter;
       const matchesLocation =
         locationFilter === "All" || company.location === locationFilter;
       return matchesSearch && matchesIndustry && matchesSize && matchesLocation;
@@ -80,26 +79,8 @@ export default function CompaniesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Companies</h1>
-          <p className="text-gray-600">
-            Manage your client companies and their loan portfolios
-          </p>
-        </div>
-        <Link
-          href="/dashboard/companies/new"
-          className="bg-navy-800 text-white px-4 py-2 rounded-md hover:bg-navy-900 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2"
-        >
-          Add Company
-        </Link>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard
-          value={filteredCompanies.length}
-          label="Total Companies"
-        />
+        <StatCard value={filteredCompanies.length} label="Total Companies" />
         <StatCard
           value={filteredCompanies.reduce((sum, c) => sum + c.loans.length, 0)}
           label="Total Loans"
@@ -109,14 +90,22 @@ export default function CompaniesPage() {
           label="Industries"
         />
       </div>
-
-      <TableHeader
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        searchPlaceholder="Search by name or location..."
-        filters={filters}
-      />
-
+      <div className="flex flex-col md:flex-row md:items-end gap-2">
+        <div className="flex-1 min-w-0">
+          <TableHeader
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            searchPlaceholder="Search by name or location..."
+            filters={filters}
+          />
+        </div>
+        <Link
+          href="/dashboard/companies/new"
+          className="shrink-0 bg-navy-800 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-navy-900 transition-all duration-200"
+        >
+          + Add Company
+        </Link>
+      </div>
       <Table
         columns={companyColumns}
         data={filteredCompanies}

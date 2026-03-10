@@ -14,6 +14,7 @@ import {
 } from "@/app/components/Table";
 import { StatCard } from "@/app/components/StatCard";
 import { Button } from "@/app/components/Buttons";
+import Link from "next/link";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -60,10 +61,7 @@ export default function LoansPage() {
   }
 
   const statuses = ["All", "Active", "Upcoming", "Maturing Soon", "Matured"];
-  const loanTypes = [
-    "All",
-    ...new Set(loansData.map((l) => l.loanType)),
-  ];
+  const loanTypes = ["All", ...new Set(loansData.map((l) => l.loanType))];
 
   const filteredLoans: LoanRow[] = loansData
     .filter((loan) => {
@@ -100,69 +98,79 @@ export default function LoansPage() {
       transition={{ duration: 0.5 }}
     >
       <motion.div
-        className="flex justify-between items-center"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Loans</h1>
-          <p className="text-gray-600">
-            Monitor loan portfolios and maturity dates
-          </p>
-        </div>
-        <Button href="/dashboard/loans/new">Add Loan</Button>
-      </motion.div>
-
-      <motion.div
         className="grid grid-cols-1 md:grid-cols-4 gap-6"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
-        <StatCard value={filteredLoans.length} label="Total Loans" variants={itemVariants} />
-        <StatCard value={formatCurrency(totalLoanValue)} label="Total Value" variants={itemVariants} />
         <StatCard
-          value={filteredLoans.filter((l) => l.computedStatus === "Maturing Soon").length}
+          value={filteredLoans.length}
+          label="Total Loans"
+          variants={itemVariants}
+        />
+        <StatCard
+          value={formatCurrency(totalLoanValue)}
+          label="Total Value"
+          variants={itemVariants}
+        />
+        <StatCard
+          value={
+            filteredLoans.filter((l) => l.computedStatus === "Maturing Soon")
+              .length
+          }
           label="Maturing Soon"
           variants={itemVariants}
         />
         <StatCard
-          value={filteredLoans.filter((l) => l.computedStatus === "Active").length}
+          value={
+            filteredLoans.filter((l) => l.computedStatus === "Active").length
+          }
           label="Active"
           variants={itemVariants}
         />
       </motion.div>
-
-      <TableHeader
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        searchPlaceholder="Search by company, lender, or loan type..."
-        filters={[
-          {
-            id: "status",
-            label: "Status",
-            value: statusFilter,
-            onChange: setStatusFilter,
-            options: statuses,
-          },
-          {
-            id: "loanType",
-            label: "Loan Type",
-            value: loanTypeFilter,
-            onChange: setLoanTypeFilter,
-            options: loanTypes,
-          },
-        ]}
-      />
-
+      <div className="flex flex-col md:flex-row md:items-end gap-2">
+        <div className="flex-1 min-w-0">
+          <TableHeader
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            searchPlaceholder="Search by company, lender, or loan type..."
+            filters={[
+              {
+                id: "status",
+                label: "Status",
+                value: statusFilter,
+                onChange: setStatusFilter,
+                options: statuses,
+              },
+              {
+                id: "loanType",
+                label: "Loan Type",
+                value: loanTypeFilter,
+                onChange: setLoanTypeFilter,
+                options: loanTypes,
+              },
+            ]}
+          />
+        </div>
+        <Link
+          href="/dashboard/loans/new"
+          className="shrink-0 bg-navy-800 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-navy-900 transition-all duration-200"
+        >
+          + Add Loans
+        </Link>
+      </div>
       <Table
         columns={loanColumns}
         data={filteredLoans}
         rowKey={(row) => row.id}
-        onRowClick={(row) => router.push(`/dashboard/companies/${row.companyId}`)}
+        onRowClick={(row) =>
+          router.push(`/dashboard/companies/${row.companyId}`)
+        }
         emptyMessage="No loans found matching your criteria."
-        getRowBorderColor={(row) => statusBorderColors[row.computedStatus] ?? "border-l-gray-300"}
+        getRowBorderColor={(row) =>
+          statusBorderColors[row.computedStatus] ?? "border-l-gray-300"
+        }
       />
     </motion.div>
   );

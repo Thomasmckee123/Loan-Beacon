@@ -54,17 +54,6 @@ export default function AlertsPage() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <h1 className="text-2xl font-bold text-gray-900">Alert Logs</h1>
-        <p className="text-gray-600">
-          View notification history for loan maturity alerts
-        </p>
-      </motion.div>
-
       {/* Summary stats */}
       <motion.div
         className="grid grid-cols-1 md:grid-cols-3 gap-6"
@@ -98,13 +87,12 @@ export default function AlertsPage() {
         />
       </motion.div>
 
-      {/* Filter pills */}
       <div className="flex flex-wrap items-center gap-2">
         {alertTypes.map((type) => (
           <button
             key={type}
             onClick={() => setFilter(type)}
-            className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-200 ${
+            className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all cursor-pointer duration-200 ${
               filter === type
                 ? "bg-navy-800 text-white shadow-sm"
                 : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300 hover:text-gray-900"
@@ -115,14 +103,14 @@ export default function AlertsPage() {
         ))}
       </div>
 
-      {/* Alert list */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
             Alert History
           </h2>
           <span className="text-sm text-gray-400">
-            {filteredAlerts.length} {filteredAlerts.length === 1 ? "alert" : "alerts"}
+            {filteredAlerts.length}{" "}
+            {filteredAlerts.length === 1 ? "alert" : "alerts"}
           </span>
         </div>
 
@@ -133,6 +121,7 @@ export default function AlertsPage() {
           </div>
         ) : (
           <motion.div
+            key={filter}
             className="space-y-3"
             variants={containerVariants}
             initial="hidden"
@@ -145,7 +134,9 @@ export default function AlertsPage() {
                 <motion.div
                   key={alert.id}
                   className={`bg-white border-l-4 ${
-                    alert.sentSuccessfully ? "border-l-green-500" : "border-l-red-500"
+                    alert.sentSuccessfully
+                      ? "border-l-green-500"
+                      : "border-l-red-500"
                   } rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200`}
                   variants={itemVariants}
                   whileHover={{ x: 4 }}
@@ -177,7 +168,9 @@ export default function AlertsPage() {
                     </div>
                     <div className="text-right shrink-0">
                       <p className="text-sm font-medium text-gray-900">
-                        {alert.sentAt ? formatDate(new Date(alert.sentAt)) : "Not sent"}
+                        {alert.sentAt
+                          ? formatDate(new Date(alert.sentAt))
+                          : "Not sent"}
                       </p>
                       <p className="text-xs text-gray-400 mt-1">
                         Created {formatDate(new Date(alert.createdAt))}

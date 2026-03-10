@@ -51,10 +51,9 @@ const TimelineCard = ({ loan, company, variants }: TimelineCardProps) => {
 
   return (
     <motion.div
-      className={`bg-white border-l-4 ${styles.border} rounded-xl p-5 hover:cursor-pointer shadow-sm hover:shadow-lg ${styles.glow} transition-all duration-300`}
+      className={`border-l-4 ${styles.border} px-5 py-4 hover:cursor-pointer hover:bg-gray-50 transition-all duration-200`}
       variants={variants}
       onClick={() => router.push(`/dashboard/companies/${company?.id}`)}
-      whileHover={{ x: 6 }}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">

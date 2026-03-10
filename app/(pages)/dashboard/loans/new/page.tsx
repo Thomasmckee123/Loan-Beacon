@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { useCompanies, useCreateLoan } from "@/hooks";
 import { useSnackbar } from "@/app/components/Snackbar";
 import Link from "next/link";
-import { Button } from "@/app/components/Buttons";
 import { Input } from "@/app/components/InputField";
+import { motion } from "framer-motion";
+import { ArrowLeft, Banknote } from "lucide-react";
 
 export default function NewLoanPage() {
   const router = useRouter();
@@ -77,22 +78,20 @@ export default function NewLoanPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center space-x-4">
+    <motion.div
+      className="max-w-4xl mx-auto"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: 0.1 }}
+    >
+      <div className="mb-4">
         <Link
           href="/dashboard/loans"
-          className="text-navy-700 hover:text-navy-600 flex items-center"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-blue-700 transition-colors duration-200"
         >
-          ← Back to Loans
+          <ArrowLeft size={14} />
+          Back to Loans
         </Link>
-      </div>
-
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Add New Loan</h1>
-        <p className="text-gray-600">
-          Enter loan details to track maturity dates and refinancing
-          opportunities
-        </p>
       </div>
 
       {loading ? (
@@ -100,160 +99,202 @@ export default function NewLoanPage() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-navy-800"></div>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="px-6 py-4 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input>
-                <Input.Select
-                  id="companyId"
-                  label="Company"
-                  placeholder="Select company"
-                  value={(() => {
-                    const selected = companiesData.find(
-                      (c) => c.id === formData.companyId,
-                    );
-                    return selected
-                      ? `${selected.name} (${selected.industry})`
-                      : "";
-                  })()}
-                  options={companiesData.map(
-                    (c) => `${c.name} (${c.industry})`,
-                  )}
-                  onChange={(value) => {
-                    const company = companiesData.find(
-                      (c) => `${c.name} (${c.industry})` === value,
-                    );
-                    setFormData({
-                      ...formData,
-                      companyId: company?.id ?? "",
-                    });
-                  }}
-                />
-              </Input>
-              <Input>
-                <Input.Select
-                  id="loanType"
-                  label="Loan Type"
-                  placeholder="Select loan type"
-                  value={formData.loanType}
-                  options={loanTypes}
-                  onChange={(value) =>
-                    setFormData({ ...formData, loanType: value })
-                  }
-                />
-              </Input>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="md:col-span-2">
-                <Input>
-                  <Input.Text
-                    id="amount"
-                    type="number"
-                    name="amount"
-                    label="Loan Amount"
-                    placeholder="50000000"
-                    className="bg-white"
-                    required
-                    value={formData.amount}
-                    onChange={handleChange}
-                  />
-                </Input>
+        <form onSubmit={handleSubmit}>
+          <div className="bg-white rounded-lg shadow-lg">
+            {/* Card header — matches dashboard card style */}
+            <div className="px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center gap-3">
+                <div className="size-10 bg-blue-900 rounded-md flex items-center justify-center">
+                  <Banknote className="size-5 text-amber-400" />
+                </div>
+                <div>
+                  <h1 className="text-lg font-medium text-blue-900">
+                    Add New Loan
+                  </h1>
+                  <p className="text-sm text-gray-500">
+                    Track maturity dates and refinancing opportunities
+                  </p>
+                </div>
               </div>
-              <Input>
-                <Input.Select
-                  id="currency"
-                  label="Currency"
-                  value={formData.currency}
-                  options={currencies}
-                  onChange={(value) =>
-                    setFormData({ ...formData, currency: value })
-                  }
-                />
-              </Input>
             </div>
 
-            <Input>
-              <Input.Text
-                id="lender"
-                name="lender"
-                label="Lender"
-                placeholder="First National Bank"
-                className="bg-white"
-                required
-                value={formData.lender}
-                onChange={handleChange}
-              />
-            </Input>
+            {/* Form body */}
+            <div className="p-6 space-y-6">
+              {/* Loan identity */}
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
+                  Loan Identity
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Input>
+                    <Input.Select
+                      id="companyId"
+                      label="Company"
+                      placeholder="Select company"
+                      value={(() => {
+                        const selected = companiesData.find(
+                          (c) => c.id === formData.companyId,
+                        );
+                        return selected
+                          ? `${selected.name} (${selected.industry})`
+                          : "";
+                      })()}
+                      options={companiesData.map(
+                        (c) => `${c.name} (${c.industry})`,
+                      )}
+                      onChange={(value) => {
+                        const company = companiesData.find(
+                          (c) => `${c.name} (${c.industry})` === value,
+                        );
+                        setFormData({
+                          ...formData,
+                          companyId: company?.id ?? "",
+                        });
+                      }}
+                    />
+                  </Input>
+                  <Input>
+                    <Input.Select
+                      id="loanType"
+                      label="Loan Type"
+                      placeholder="Select loan type"
+                      value={formData.loanType}
+                      options={loanTypes}
+                      onChange={(value) =>
+                        setFormData({ ...formData, loanType: value })
+                      }
+                    />
+                  </Input>
+                  <Input>
+                    <Input.Text
+                      id="lender"
+                      name="lender"
+                      label="Lender"
+                      placeholder="First National Bank"
+                      className="bg-white"
+                      required
+                      value={formData.lender}
+                      onChange={handleChange}
+                    />
+                  </Input>
+                </div>
+              </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Input>
-                <Input.Text
-                  id="originationDate"
-                  type="date"
-                  name="originationDate"
-                  label="Origination Date"
-                  className="bg-white"
-                  required
-                  value={formData.originationDate}
-                  onChange={handleChange}
-                />
-              </Input>
-              <Input>
-                <Input.Text
-                  id="maturityDate"
-                  type="date"
-                  name="maturityDate"
-                  label="Maturity Date"
-                  className="bg-white"
-                  required
-                  value={formData.maturityDate}
-                  onChange={handleChange}
-                />
-              </Input>
-              <Input>
-                <Input.Text
-                  id="interestRate"
-                  type="number"
-                  name="interestRate"
-                  label="Interest Rate (%)"
-                  placeholder="5.25"
-                  step="0.01"
-                  className="bg-white"
-                  required
-                  value={formData.interestRate}
-                  onChange={handleChange}
-                />
-              </Input>
+              <hr className="border-gray-100" />
+
+              {/* Financial details */}
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
+                  Financial Details
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Input>
+                    <Input.Text
+                      id="amount"
+                      type="number"
+                      name="amount"
+                      label="Loan Amount"
+                      placeholder="50000000"
+                      className="bg-white"
+                      required
+                      value={formData.amount}
+                      onChange={handleChange}
+                    />
+                  </Input>
+                  <Input>
+                    <Input.Select
+                      id="currency"
+                      label="Currency"
+                      value={formData.currency}
+                      options={currencies}
+                      onChange={(value) =>
+                        setFormData({ ...formData, currency: value })
+                      }
+                    />
+                  </Input>
+                  <Input>
+                    <Input.Text
+                      id="interestRate"
+                      type="number"
+                      name="interestRate"
+                      label="Interest Rate (%)"
+                      placeholder="5.25"
+                      step="0.01"
+                      className="bg-white"
+                      required
+                      value={formData.interestRate}
+                      onChange={handleChange}
+                    />
+                  </Input>
+                </div>
+              </div>
+
+              <hr className="border-gray-100" />
+
+              {/* Terms & notes */}
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
+                  Terms & Notes
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Input>
+                    <Input.Text
+                      id="originationDate"
+                      type="date"
+                      name="originationDate"
+                      label="Origination Date"
+                      className="bg-white"
+                      required
+                      value={formData.originationDate}
+                      onChange={handleChange}
+                    />
+                  </Input>
+                  <Input>
+                    <Input.Text
+                      id="maturityDate"
+                      type="date"
+                      name="maturityDate"
+                      label="Maturity Date"
+                      className="bg-white"
+                      required
+                      value={formData.maturityDate}
+                      onChange={handleChange}
+                    />
+                  </Input>
+                  <Input>
+                    <Input.Text
+                      id="notes"
+                      name="notes"
+                      label="Notes"
+                      placeholder="Optional details..."
+                      className="bg-white"
+                      value={formData.notes}
+                      onChange={handleChange}
+                    />
+                  </Input>
+                </div>
+              </div>
             </div>
 
-            <Input>
-              <Input.Text
-                id="notes"
-                name="notes"
-                label="Notes"
-                placeholder="Additional notes about the loan purpose, special terms, etc..."
-                className="bg-white"
-                value={formData.notes}
-                onChange={handleChange}
-              />
-            </Input>
-          </div>
-
-          <div className="flex justify-end space-x-3">
-            <Button variant="cancel" href="/dashboard/loans">
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              loading={createLoanMutation.isPending}
-              loadingText="Adding..."
-            >
-              Add Loan
-            </Button>
+            {/* Footer with actions */}
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
+              <Link
+                href="/dashboard/loans"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 transition-all duration-200"
+              >
+                Cancel
+              </Link>
+              <button
+                type="submit"
+                disabled={createLoanMutation.isPending}
+                className="px-4 py-2 text-sm font-medium text-white bg-navy-800 border border-transparent rounded-md shadow-sm hover:bg-navy-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              >
+                {createLoanMutation.isPending ? "Adding..." : "Add Loan"}
+              </button>
+            </div>
           </div>
         </form>
       )}
-    </div>
+    </motion.div>
   );
 }

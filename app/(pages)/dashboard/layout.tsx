@@ -5,23 +5,22 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
+import { useAlerts } from "@/hooks";
 import {
   LayoutDashboard,
   Building2,
   Banknote,
   CalendarDays,
   BellRing,
-  Search,
   LogOut,
-  User,
 } from "lucide-react";
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Companies", href: "/dashboard/companies", icon: Building2 },
-  { name: "Loans", href: "/dashboard/loans", icon: Banknote },
-  { name: "Timeline", href: "/dashboard/timeline", icon: CalendarDays },
-  { name: "Alerts", href: "/dashboard/alerts", icon: BellRing },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, subtitle: "Track loan maturities and refinancing opportunities" },
+  { name: "Companies", href: "/dashboard/companies", icon: Building2, subtitle: "Manage your client companies and their loan portfolios" },
+  { name: "Loans", href: "/dashboard/loans", icon: Banknote, subtitle: "Monitor loan portfolios and maturity dates" },
+  { name: "Timeline", href: "/dashboard/timeline", icon: CalendarDays, subtitle: "Visual timeline of loan maturity dates" },
+  { name: "Alerts", href: "/dashboard/alerts", icon: BellRing, subtitle: "View notification history for loan maturity alerts" },
 ];
 
 export default function DashboardLayout({
@@ -33,6 +32,20 @@ export default function DashboardLayout({
   const router = useRouter();
   const [userInitials, setUserInitials] = useState("...");
   const [userEmail, setUserEmail] = useState("");
+  const { data: alerts = [] } = useAlerts();
+
+  const failedAlertCount = alerts.filter((a) => !a.sentSuccessfully).length;
+
+  const getPageInfo = () => {
+    const segment = pathname?.replace("/dashboard", "").split("/").filter(Boolean)[0];
+    const nav = segment ? navigation.find((n) => n.href.endsWith(segment)) : navigation[0];
+    return {
+      title: nav?.name ?? (segment ? segment.charAt(0).toUpperCase() + segment.slice(1) : "Dashboard"),
+      subtitle: nav?.subtitle,
+    };
+  };
+
+  const pageInfo = getPageInfo();
 
   useEffect(() => {
     const supabase = createClient();
@@ -80,7 +93,11 @@ export default function DashboardLayout({
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.2 }}
           >
-            <img src="/loan-beacon-logo.svg" alt="LoanBeacon" className="h-14" />
+            <img
+              src="/loan-beacon-logo.svg"
+              alt="LoanBeacon"
+              className="h-14"
+            />
           </motion.div>
 
           {/* Navigation */}
@@ -135,9 +152,23 @@ export default function DashboardLayout({
       >
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
-            <img src="/loan-beacon-logo.svg" alt="LoanBeacon" className="h-12" />
-            <div className="flex items-center space-x-2">
-              <span className="text-xs text-navy-600">Welcome!</span>
+            <img
+              src="/loan-beacon-logo.svg"
+              alt="LoanBeacon"
+              className="h-12"
+            />
+            <div className="flex items-center space-x-3">
+              <Link
+                href="/dashboard/alerts"
+                className="relative p-1.5 text-gray-500 hover:text-navy-800 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              >
+                <BellRing className="w-5 h-5" />
+                {failedAlertCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-500 rounded-full">
+                    {failedAlertCount > 9 ? "9+" : failedAlertCount}
+                  </span>
+                )}
+              </Link>
               <div className="w-6 h-6 bg-navy-800 rounded-full flex items-center justify-center">
                 <span className="text-xs font-medium text-white">
                   {userInitials}
@@ -201,39 +232,34 @@ export default function DashboardLayout({
         >
           <div className="px-6 py-4">
             <div className="flex items-center justify-between">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center">
-                  <div className="flex-1 min-w-0">
-                    <input
-                      type="text"
-                      placeholder="Search companies, loans..."
-                      className="w-full px-4 py-2 border border-navy-300 rounded-md focus:outline-none focus:ring-2 focus:ring-navy-600 focus:border-navy-600 transition-all duration-200"
-                    />
-                  </div>
-                  <div className="ml-4">
-                    <motion.button
-                      className="flex items-center px-4 py-2 text-sm font-medium text-white bg-navy-800 border border-transparent rounded-md hover:bg-navy-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-600 transition-all duration-200"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Search className="w-4 h-4 mr-2" />
-                      Search
-                    </motion.button>
-                  </div>
-                </div>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {pageInfo.title}
+                </h2>
+                {pageInfo.subtitle && (
+                  <p className="text-sm text-gray-500">{pageInfo.subtitle}</p>
+                )}
               </div>
-              <div className="ml-6">
-                <div className="flex items-center space-x-4">
-                  <span className="text-sm text-navy-700">Welcome back!</span>
-                  <motion.div
-                    className="w-8 h-8 bg-navy-800 rounded-full flex items-center justify-center ring-2 ring-transparent hover:ring-gold-400"
-                    whileHover={{ scale: 1.1 }}
-                  >
-                    <span className="text-xs font-medium text-white">
-                      {userInitials}
+              <div className="flex items-center space-x-4">
+                <Link
+                  href="/dashboard/alerts"
+                  className="relative p-2 text-gray-500 hover:text-navy-800 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                >
+                  <BellRing className="w-5 h-5" />
+                  {failedAlertCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-500 rounded-full">
+                      {failedAlertCount > 9 ? "9+" : failedAlertCount}
                     </span>
-                  </motion.div>
-                </div>
+                  )}
+                </Link>
+                <motion.div
+                  className="w-8 h-8 bg-navy-800 rounded-full flex items-center justify-center ring-2 ring-transparent hover:ring-gold-400"
+                  whileHover={{ scale: 1.1 }}
+                >
+                  <span className="text-xs font-medium text-white">
+                    {userInitials}
+                  </span>
+                </motion.div>
               </div>
             </div>
           </div>
