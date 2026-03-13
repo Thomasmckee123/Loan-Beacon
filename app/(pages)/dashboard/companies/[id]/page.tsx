@@ -3,6 +3,7 @@
 import { formatCurrency, formatDate, calculateDaysUntilMaturity } from '@/lib/utils';
 import { useCompany, useLoansByCompany } from '@/hooks';
 import Link from 'next/link';
+import LoadingSpinner from '@/app/components/loadingSpinner';
 import { useParams } from 'next/navigation';
 
 export default function CompanyDetailPage() {
@@ -14,11 +15,7 @@ export default function CompanyDetailPage() {
   const loading = companyLoading || loansLoading;
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-navy-800"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!company) {

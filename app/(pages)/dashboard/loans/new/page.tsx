@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Input } from "@/app/components/InputField";
 import { motion } from "framer-motion";
 import { ArrowLeft, Banknote } from "lucide-react";
+import LoadingSpinner from "@/app/components/loadingSpinner";
 
 export default function NewLoanPage() {
   const router = useRouter();
@@ -29,12 +30,11 @@ export default function NewLoanPage() {
   const loanTypes = [
     "Term Loan",
     "Revolving Credit",
-    "Equipment Financing",
-    "Project Finance",
     "Bridge Loan",
-    "Mezzanine Debt",
-    "Working Capital",
-    "Other",
+    "Equipment Financing",
+    "Line of Credit",
+    "SBA Loan",
+    "Real Estate Loan",
   ];
 
   const currencies = ["USD", "EUR", "GBP", "CAD"];
@@ -69,9 +69,10 @@ export default function NewLoanPage() {
           showSnackbar("Loan created successfully!");
           router.push("/dashboard/loans");
         },
-        onError: (error) => {
+        onError: (error: Error) => {
           console.error("Error creating loan:", error);
-          showSnackbar("Failed to create loan. Please try again.", "error");
+          const msg = error?.message || "Unknown error";
+          showSnackbar(`Failed to create loan: ${msg}`, "error");
         },
       },
     );
@@ -95,13 +96,10 @@ export default function NewLoanPage() {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-navy-800"></div>
-        </div>
+        <LoadingSpinner />
       ) : (
         <form onSubmit={handleSubmit}>
           <div className="bg-white rounded-lg shadow-lg">
-            {/* Card header — matches dashboard card style */}
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex items-center gap-3">
                 <div className="size-10 bg-blue-900 rounded-md flex items-center justify-center">
@@ -118,9 +116,7 @@ export default function NewLoanPage() {
               </div>
             </div>
 
-            {/* Form body */}
             <div className="p-6 space-y-6">
-              {/* Loan identity */}
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
                   Loan Identity

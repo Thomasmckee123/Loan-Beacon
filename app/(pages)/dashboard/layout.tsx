@@ -12,6 +12,7 @@ import {
   Banknote,
   CalendarDays,
   BellRing,
+  Users,
   LogOut,
 } from "lucide-react";
 
@@ -21,6 +22,7 @@ const navigation = [
   { name: "Loans", href: "/dashboard/loans", icon: Banknote, subtitle: "Monitor loan portfolios and maturity dates" },
   { name: "Timeline", href: "/dashboard/timeline", icon: CalendarDays, subtitle: "Visual timeline of loan maturity dates" },
   { name: "Alerts", href: "/dashboard/alerts", icon: BellRing, subtitle: "View notification history for loan maturity alerts" },
+  { name: "Team", href: "/dashboard/team", icon: Users, subtitle: "Manage your team members and invitations" },
 ];
 
 export default function DashboardLayout({

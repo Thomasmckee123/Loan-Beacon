@@ -37,20 +37,19 @@ export async function createCompany(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Not authenticated');
 
-  // Look up the user's team_id from the users table
-  const { data: userData, error: userError } = await supabase
-    .from('users')
+  // Look up the user's team_id from team_members
+  const { data: membership } = await supabase
+    .from('team_members')
     .select('team_id')
-    .eq('id', user.id)
+    .eq('user_id', user.id)
+    .limit(1)
     .single();
-
-  if (userError || !userData) throw new Error('User profile not found');
 
   const { data, error } = await supabase
     .from('companies')
     .insert({
       user_id: user.id,
-      team_id: userData.team_id,
+      team_id: membership?.team_id ?? null,
       name: company.name,
       industry: company.industry,
       size: company.size,

@@ -34,7 +34,7 @@ export default function NewCompanyPage() {
     "Other",
   ];
 
-  const companySizes = ["Small", "Mid-Market", "Large", "Enterprise"];
+  const companySizes = ["Small", "Mid-Market", "Enterprise"];
 
   const handleChange = (
     e: React.ChangeEvent<

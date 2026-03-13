@@ -1,20 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useReducer } from "react";
 import { useCompanies, useLoans } from "@/hooks";
 import { formatCurrency } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import {
-  Table,
-  TableHeader,
-  loanColumns,
-  LoanRow,
-  Filter,
-} from "@/app/components/Table";
-import { StatCard } from "@/app/components/StatCard";
-import { Button } from "@/app/components/Buttons";
+import { Table, TableHeader, loanColumns } from "@/app/components/Table";
+import { Stats } from "@/app/components/StatCards";
 import Link from "next/link";
+import LoadingSpinner from "@/app/components/loadingSpinner";
+import {
+  filterReducer,
+  initialFilterState,
+  statuses,
+  filterLoans,
+} from "./utils";
+import { Button } from "@/app/components/Buttons";
+import Loan from "./components/Loan";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -47,47 +49,38 @@ export default function LoansPage() {
   const { data: companiesData = [], isPending: companiesLoading } =
     useCompanies();
   const { data: loansData = [], isPending: loansLoading } = useLoans();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
-  const [loanTypeFilter, setLoanTypeFilter] = useState("All");
+  const [filters, dispatch] = useReducer(filterReducer, initialFilterState);
   const loading = companiesLoading || loansLoading;
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-navy-800"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
-  const statuses = ["All", "Active", "Upcoming", "Maturing Soon", "Matured"];
+  const {
+    searchTerm,
+    statusFilter,
+    loanTypeFilter,
+    maturityFrom,
+    maturityTo,
+    amountMin,
+    amountMax,
+    showAdvanced,
+  } = filters;
+
   const loanTypes = ["All", ...new Set(loansData.map((l) => l.loanType))];
 
-  const filteredLoans: LoanRow[] = loansData
-    .filter((loan) => {
-      const company = companiesData.find((c) => c.id === loan.companyId);
-      const matchesSearch =
-        company?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        loan.lender.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        loan.loanType.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus =
-        statusFilter === "All" || loan.computedStatus === statusFilter;
-      const matchesLoanType =
-        loanTypeFilter === "All" || loan.loanType === loanTypeFilter;
-      return matchesSearch && matchesStatus && matchesLoanType;
-    })
-    .map((loan) => {
-      const company = companiesData.find((c) => c.id === loan.companyId);
-      return {
-        ...loan,
-        companyName: company?.name,
-        companyIndustry: company?.industry,
-      };
-    });
+  const filteredLoans = filterLoans(loansData, companiesData, filters);
 
   const totalLoanValue = filteredLoans.reduce(
     (sum, loan) => sum + loan.amount,
     0,
+  );
+
+  const hasAdvancedFilters = !!(
+    maturityFrom ||
+    maturityTo ||
+    amountMin ||
+    amountMax
   );
 
   return (
@@ -97,68 +90,80 @@ export default function LoansPage() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <motion.div
-        className="grid grid-cols-1 md:grid-cols-4 gap-6"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        <StatCard
-          value={filteredLoans.length}
-          label="Total Loans"
-          variants={itemVariants}
-        />
-        <StatCard
-          value={formatCurrency(totalLoanValue)}
-          label="Total Value"
-          variants={itemVariants}
-        />
-        <StatCard
-          value={
-            filteredLoans.filter((l) => l.computedStatus === "Maturing Soon")
-              .length
-          }
-          label="Maturing Soon"
-          variants={itemVariants}
-        />
-        <StatCard
-          value={
-            filteredLoans.filter((l) => l.computedStatus === "Active").length
-          }
-          label="Active"
-          variants={itemVariants}
-        />
-      </motion.div>
-      <div className="flex flex-col md:flex-row md:items-end gap-2">
-        <div className="flex-1 min-w-0">
-          <TableHeader
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            searchPlaceholder="Search by company, lender, or loan type..."
-            filters={[
-              {
-                id: "status",
-                label: "Status",
-                value: statusFilter,
-                onChange: setStatusFilter,
-                options: statuses,
-              },
-              {
-                id: "loanType",
-                label: "Loan Type",
-                value: loanTypeFilter,
-                onChange: setLoanTypeFilter,
-                options: loanTypes,
-              },
-            ]}
-          />
+      <Stats
+        stats={[
+          { value: filteredLoans.length, label: "Total Loans" },
+          { value: formatCurrency(totalLoanValue), label: "Total Value" },
+          {
+            value: filteredLoans.filter(
+              (l) => l.computedStatus === "Maturing Soon",
+            ).length,
+            label: "Maturing Soon",
+          },
+          {
+            value: filteredLoans.filter((l) => l.computedStatus === "Active")
+              .length,
+            label: "Active",
+          },
+        ]}
+        containerVariants={containerVariants}
+        itemVariants={itemVariants}
+      />
+      <div className="space-y-2">
+        <div className="flex flex-col md:flex-row md:items-end gap-2">
+          <div className="flex-1 min-w-0">
+            <TableHeader
+              searchTerm={searchTerm}
+              setSearchTerm={(v) =>
+                dispatch({ type: "SET_SEARCH", payload: v })
+              }
+              searchPlaceholder="Search by company, lender, or loan type..."
+              filters={[
+                {
+                  id: "status",
+                  label: "Status",
+                  value: statusFilter,
+                  onChange: (v) => dispatch({ type: "SET_STATUS", payload: v }),
+                  options: statuses,
+                },
+                {
+                  id: "loanType",
+                  label: "Loan Type",
+                  value: loanTypeFilter,
+                  onChange: (v) =>
+                    dispatch({ type: "SET_LOAN_TYPE", payload: v }),
+                  options: loanTypes,
+                },
+              ]}
+            />
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              onClick={() => dispatch({ type: "TOGGLE_ADVANCED" })}
+              className={`px-3 py-2 rounded-full text-sm font-medium border transition-all duration-200 ${
+                showAdvanced || hasAdvancedFilters
+                  ? "bg-navy-800 text-white border-navy-800"
+                  : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
+              }`}
+            >
+              {showAdvanced ? "Hide Filters" : "More Filters"}
+            </Button>
+            <Link
+              href="/dashboard/loans/new"
+              className="bg-navy-800 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-navy-900 transition-all duration-200"
+            >
+              + Add Loans
+            </Link>
+          </div>
         </div>
-        <Link
-          href="/dashboard/loans/new"
-          className="shrink-0 bg-navy-800 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-navy-900 transition-all duration-200"
-        >
-          + Add Loans
-        </Link>
+
+        {showAdvanced && (
+          <Loan
+            filters={filters}
+            dispatch={dispatch}
+            hasAdvancedFilters={hasAdvancedFilters}
+          />
+        )}
       </div>
       <Table
         columns={loanColumns}
