@@ -7,7 +7,8 @@ import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Building2, Banknote, Clock, DollarSign } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { StatCard } from "@/app/components/StatCard";
+import { Stats } from "@/app/components/StatCards";
+import LoadingSpinner from "@/app/components/loadingSpinner";
 
 // Animated counter component
 function AnimatedCounter({
@@ -65,11 +66,7 @@ export default function DashboardPage() {
   const router = useRouter();
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-navy-800"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   // Calculate stats
@@ -100,50 +97,45 @@ export default function DashboardPage() {
       transition={{ duration: 0.5 }}
     >
 
-      <motion.div
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        <StatCard
-          value={<AnimatedCounter value={totalCompanies} />}
-          label="Total Companies"
-          icon={<Building2 className="size-6 text-amber-400" />}
-          valueClassName="text-blue-900"
-          labelClassName="text-blue-900"
-          variants={cardVariants}
-          onClick={() => router.push("/dashboard/companies")}
-        />
-        <StatCard
-          value={<AnimatedCounter value={activeLoans} />}
-          label="Active Loans"
-          icon={<Banknote className="size-6 text-amber-400" />}
-          valueClassName="text-blue-900"
-          labelClassName="text-blue-900"
-          variants={cardVariants}
-          onClick={() => router.push("/dashboard/loans")}
-        />
-        <StatCard
-          value={<AnimatedCounter value={upcomingLoans} />}
-          label="Upcoming (6 months)"
-          icon={<Clock className="size-6 text-amber-400" />}
-          valueClassName="text-blue-900"
-          labelClassName="text-blue-900"
-          className="bg-gradient-to-br from-amber-50 to-amber-100 border-l-4 border-amber-400"
-          variants={cardVariants}
-          onClick={() => router.push("/dashboard/loans?filter=upcoming")}
-        />
-        <StatCard
-          value={formatCurrency(totalLoanValue)}
-          label="Total Loan Value"
-          icon={<DollarSign className="size-6 text-amber-400" />}
-          valueClassName="text-blue-900"
-          labelClassName="text-blue-900"
-          variants={cardVariants}
-          onClick={() => router.push("/dashboard/loans")}
-        />
-      </motion.div>
+      <Stats
+        stats={[
+          {
+            value: <AnimatedCounter value={totalCompanies} />,
+            label: "Total Companies",
+            icon: <Building2 className="size-6 text-amber-400" />,
+            valueClassName: "text-blue-900",
+            labelClassName: "text-blue-900",
+            onClick: () => router.push("/dashboard/companies"),
+          },
+          {
+            value: <AnimatedCounter value={activeLoans} />,
+            label: "Active Loans",
+            icon: <Banknote className="size-6 text-amber-400" />,
+            valueClassName: "text-blue-900",
+            labelClassName: "text-blue-900",
+            onClick: () => router.push("/dashboard/loans"),
+          },
+          {
+            value: <AnimatedCounter value={upcomingLoans} />,
+            label: "Upcoming (6 months)",
+            icon: <Clock className="size-6 text-amber-400" />,
+            valueClassName: "text-blue-900",
+            labelClassName: "text-blue-900",
+            className: "bg-gradient-to-br from-amber-50 to-amber-100 border-l-4 border-amber-400",
+            onClick: () => router.push("/dashboard/loans?filter=upcoming"),
+          },
+          {
+            value: formatCurrency(totalLoanValue),
+            label: "Total Loan Value",
+            icon: <DollarSign className="size-6 text-amber-400" />,
+            valueClassName: "text-blue-900",
+            labelClassName: "text-blue-900",
+            onClick: () => router.push("/dashboard/loans"),
+          },
+        ]}
+        containerVariants={containerVariants}
+        itemVariants={cardVariants}
+      />
 
       {/* Content grid */}
       <motion.div

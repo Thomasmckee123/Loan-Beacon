@@ -7,8 +7,9 @@ import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar as CalendarIcon, ArrowLeft, ArrowRight } from "lucide-react";
-import { StatCard } from "@/app/components/StatCard";
+import { Stats } from "@/app/components/StatCards";
 import { TimelineCard } from "@/app/components/TimelineCard";
+import LoadingSpinner from "@/app/components/loadingSpinner";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -239,11 +240,7 @@ export default function TimelinePage() {
   const loading = companiesLoading || loansLoading;
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-navy-800"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   // Group loans by maturity year and month
@@ -314,36 +311,25 @@ export default function TimelinePage() {
           </motion.button>
         </div>
       </motion.div>
-      <motion.div
-        className="grid grid-cols-1 md:grid-cols-3 gap-6"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        <StatCard
-          value={loansData.length}
-          label="Total Loans Tracked"
-          variants={itemVariants}
-        />
-        <StatCard
-          value={
-            loansData.filter((l) => l.computedStatus === "Maturing Soon").length
-          }
-          label="Maturing Soon (≤30 days)"
-          valueClassName="text-amber-600"
-          labelClassName="text-amber-700"
-          className="bg-gradient-to-br from-amber-50 to-amber-100 border-l-4 border-amber-400"
-          variants={itemVariants}
-        />
-        <StatCard
-          value={
-            loansData.filter((l) => l.computedStatus === "Upcoming").length
-          }
-          label="Upcoming (≤6 months)"
-          valueClassName="text-gray-600"
-          variants={itemVariants}
-        />
-      </motion.div>
+      <Stats
+        stats={[
+          { value: loansData.length, label: "Total Loans Tracked" },
+          {
+            value: loansData.filter((l) => l.computedStatus === "Maturing Soon").length,
+            label: "Maturing Soon (≤30 days)",
+            valueClassName: "text-amber-600",
+            labelClassName: "text-amber-700",
+            className: "bg-gradient-to-br from-amber-50 to-amber-100 border-l-4 border-amber-400",
+          },
+          {
+            value: loansData.filter((l) => l.computedStatus === "Upcoming").length,
+            label: "Upcoming (≤6 months)",
+            valueClassName: "text-gray-600",
+          },
+        ]}
+        containerVariants={containerVariants}
+        itemVariants={itemVariants}
+      />
 
       {/* View Content */}
       <AnimatePresence mode="wait">
@@ -377,16 +363,13 @@ export default function TimelinePage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.1 * index }}
                   >
-                    {/* Month marker dot */}
                     <div className="absolute left-5 -translate-x-1/2 top-5 z-10">
                       <div className="size-10 rounded-full bg-blue-900 flex items-center justify-center shadow-lg ring-4 ring-white">
                         <CalendarIcon className="size-4 text-amber-400" />
                       </div>
                     </div>
 
-                    {/* Month card */}
                     <div className="ml-16 bg-white rounded-lg shadow-lg overflow-hidden">
-                      {/* Month header */}
                       <div className="px-6 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
                         <h3 className="text-sm font-semibold text-blue-900">
                           {getMonthName(period)}
@@ -402,7 +385,6 @@ export default function TimelinePage() {
                         </div>
                       </div>
 
-                      {/* Loans list */}
                       <motion.div
                         className="divide-y divide-gray-100"
                         variants={containerVariants}

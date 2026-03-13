@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useReducer, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { useSnackbar } from "@/app/components/Snackbar";
@@ -13,37 +13,9 @@ import {
   Trash2,
   Copy,
   Clock,
-  CheckCircle,
 } from "lucide-react";
-
-interface TeamMember {
-  id: string;
-  user_id: string;
-  role: "owner" | "admin" | "member";
-  accepted_at: string | null;
-  created_at: string;
-  email?: string;
-  name?: string;
-}
-
-interface Invite {
-  id: string;
-  email: string;
-  role: string;
-  token: string;
-  expires_at: string;
-  created_at: string;
-}
-
-interface Team {
-  team_id: string;
-  role: string;
-  teams: {
-    id: string;
-    name: string;
-    created_at: string;
-  };
-}
+import LoadingSpinner from "@/app/components/loadingSpinner";
+import { teamReducer, initialTeamState } from "./utils";
 
 const roleIcons: Record<string, React.ReactNode> = {
   owner: <Crown size={14} className="text-amber-500" />,
@@ -59,33 +31,36 @@ const roleBadgeStyles: Record<string, string> = {
 
 export default function TeamPage() {
   const { showSnackbar } = useSnackbar();
-  const [loading, setLoading] = useState(true);
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [members, setMembers] = useState<TeamMember[]>([]);
-  const [invites, setInvites] = useState<Invite[]>([]);
-  const [currentTeamId, setCurrentTeamId] = useState<string | null>(null);
-  const [currentRole, setCurrentRole] = useState<string>("");
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState("member");
-  const [inviting, setInviting] = useState(false);
-  const [showCreateTeam, setShowCreateTeam] = useState(false);
-  const [newTeamName, setNewTeamName] = useState("");
-  const [newTeamPlan, setNewTeamPlan] = useState("free");
-  const [newTeamMaxUsers, setNewTeamMaxUsers] = useState("5");
-  const [creatingTeam, setCreatingTeam] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState("");
+  const [state, dispatch] = useReducer(teamReducer, initialTeamState);
+
+  const {
+    loading,
+    teams,
+    members,
+    invites,
+    currentTeamId,
+    currentRole,
+    currentUserId,
+    inviteEmail,
+    inviteRole,
+    inviting,
+    showCreateTeam,
+    newTeamName,
+    newTeamPlan,
+    newTeamMaxUsers,
+    creatingTeam,
+  } = state;
 
   const fetchTeams = useCallback(async () => {
     const res = await fetch("/api/teams");
     if (res.ok) {
       const data = await res.json();
-      setTeams(data);
+      dispatch({ type: "SET_TEAMS", payload: data });
       if (data.length > 0 && !currentTeamId) {
-        setCurrentTeamId(data[0].team_id);
-        setCurrentRole(data[0].role);
+        dispatch({ type: "SET_CURRENT_TEAM", payload: { teamId: data[0].team_id, role: data[0].role } });
       }
     }
-    setLoading(false);
+    dispatch({ type: "SET_LOADING", payload: false });
   }, [currentTeamId]);
 
   const fetchMembers = useCallback(async () => {
@@ -93,7 +68,7 @@ export default function TeamPage() {
     const res = await fetch(`/api/teams/members?teamId=${currentTeamId}`);
     if (res.ok) {
       const data = await res.json();
-      setMembers(data);
+      dispatch({ type: "SET_MEMBERS", payload: data });
     }
   }, [currentTeamId]);
 
@@ -102,16 +77,15 @@ export default function TeamPage() {
     const res = await fetch(`/api/teams/invite?teamId=${currentTeamId}`);
     if (res.ok) {
       const data = await res.json();
-      setInvites(data);
+      dispatch({ type: "SET_INVITES", payload: data });
     }
   }, [currentTeamId]);
 
   useEffect(() => {
     fetchTeams();
-    // Get current user email
     const supabase = createClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user?.id) setCurrentUserId(session.user.id);
+      if (session?.user?.id) dispatch({ type: "SET_CURRENT_USER_ID", payload: session.user.id });
     });
   }, [fetchTeams]);
 
@@ -125,7 +99,7 @@ export default function TeamPage() {
   const handleCreateTeam = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTeamName.trim()) return;
-    setCreatingTeam(true);
+    dispatch({ type: "SET_CREATING_TEAM", payload: true });
 
     const res = await fetch("/api/teams", {
       method: "POST",
@@ -140,23 +114,20 @@ export default function TeamPage() {
     if (res.ok) {
       const team = await res.json();
       showSnackbar("Team created!");
-      setNewTeamName("");
-      setNewTeamPlan("free");
-      setNewTeamMaxUsers("5");
-      setShowCreateTeam(false);
-      setCurrentTeamId(team.id);
+      dispatch({ type: "RESET_CREATE_FORM" });
+      dispatch({ type: "SET_CURRENT_TEAM", payload: { teamId: team.id, role: "owner" } });
       await fetchTeams();
     } else {
       const err = await res.json();
       showSnackbar(err.error || "Failed to create team", "error");
+      dispatch({ type: "SET_CREATING_TEAM", payload: false });
     }
-    setCreatingTeam(false);
   };
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inviteEmail.trim() || !currentTeamId) return;
-    setInviting(true);
+    dispatch({ type: "SET_INVITING", payload: true });
 
     const res = await fetch("/api/teams/invite", {
       method: "POST",
@@ -170,13 +141,13 @@ export default function TeamPage() {
 
     if (res.ok) {
       showSnackbar(`Invite sent to ${inviteEmail}`);
-      setInviteEmail("");
+      dispatch({ type: "RESET_INVITE_FORM" });
       fetchInvites();
     } else {
       const err = await res.json();
       showSnackbar(err.error || "Failed to send invite", "error");
+      dispatch({ type: "SET_INVITING", payload: false });
     }
-    setInviting(false);
   };
 
   const handleRemoveMember = async (memberId: string) => {
@@ -220,11 +191,7 @@ export default function TeamPage() {
   const currentTeam = teams.find((t) => t.team_id === currentTeamId);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-navy-800"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   // No team yet — show create prompt
@@ -256,7 +223,7 @@ export default function TeamPage() {
                 type="text"
                 placeholder="e.g. Advisory Group"
                 value={newTeamName}
-                onChange={(e) => setNewTeamName(e.target.value)}
+                onChange={(e) => dispatch({ type: "SET_NEW_TEAM_NAME", payload: e.target.value })}
                 required
                 className="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent"
               />
@@ -268,7 +235,7 @@ export default function TeamPage() {
                 </label>
                 <select
                   value={newTeamPlan}
-                  onChange={(e) => setNewTeamPlan(e.target.value)}
+                  onChange={(e) => dispatch({ type: "SET_NEW_TEAM_PLAN", payload: e.target.value })}
                   className="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent bg-white"
                 >
                   <option value="free">Free</option>
@@ -285,7 +252,7 @@ export default function TeamPage() {
                   type="number"
                   min="1"
                   value={newTeamMaxUsers}
-                  onChange={(e) => setNewTeamMaxUsers(e.target.value)}
+                  onChange={(e) => dispatch({ type: "SET_NEW_TEAM_MAX_USERS", payload: e.target.value })}
                   required
                   className="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent"
                 />
@@ -317,10 +284,7 @@ export default function TeamPage() {
           {teams.map((t) => (
             <button
               key={t.team_id}
-              onClick={() => {
-                setCurrentTeamId(t.team_id);
-                setCurrentRole(t.role);
-              }}
+              onClick={() => dispatch({ type: "SET_CURRENT_TEAM", payload: { teamId: t.team_id, role: t.role } })}
               className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-200 ${
                 currentTeamId === t.team_id
                   ? "bg-navy-800 text-white shadow-sm"
@@ -331,7 +295,7 @@ export default function TeamPage() {
             </button>
           ))}
           <button
-            onClick={() => setShowCreateTeam((v) => !v)}
+            onClick={() => dispatch({ type: "TOGGLE_CREATE_TEAM" })}
             className="px-4 py-1.5 text-sm font-medium rounded-full border border-dashed border-gray-300 text-gray-500 hover:border-navy-800 hover:text-navy-800 transition-all duration-200"
           >
             + New Team
@@ -356,7 +320,7 @@ export default function TeamPage() {
                 type="text"
                 placeholder="e.g. Advisory Group"
                 value={newTeamName}
-                onChange={(e) => setNewTeamName(e.target.value)}
+                onChange={(e) => dispatch({ type: "SET_NEW_TEAM_NAME", payload: e.target.value })}
                 required
                 className="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent"
               />
@@ -368,7 +332,7 @@ export default function TeamPage() {
                 </label>
                 <select
                   value={newTeamPlan}
-                  onChange={(e) => setNewTeamPlan(e.target.value)}
+                  onChange={(e) => dispatch({ type: "SET_NEW_TEAM_PLAN", payload: e.target.value })}
                   className="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent bg-white"
                 >
                   <option value="free">Free</option>
@@ -385,7 +349,7 @@ export default function TeamPage() {
                   type="number"
                   min="1"
                   value={newTeamMaxUsers}
-                  onChange={(e) => setNewTeamMaxUsers(e.target.value)}
+                  onChange={(e) => dispatch({ type: "SET_NEW_TEAM_MAX_USERS", payload: e.target.value })}
                   required
                   className="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent"
                 />
@@ -394,7 +358,7 @@ export default function TeamPage() {
             <div className="flex gap-2 justify-end">
               <button
                 type="button"
-                onClick={() => setShowCreateTeam(false)}
+                onClick={() => dispatch({ type: "TOGGLE_CREATE_TEAM" })}
                 className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-all duration-200"
               >
                 Cancel
@@ -551,13 +515,13 @@ export default function TeamPage() {
                 type="email"
                 placeholder="colleague@company.com"
                 value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
+                onChange={(e) => dispatch({ type: "SET_INVITE_EMAIL", payload: e.target.value })}
                 required
                 className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent"
               />
               <select
                 value={inviteRole}
-                onChange={(e) => setInviteRole(e.target.value)}
+                onChange={(e) => dispatch({ type: "SET_INVITE_ROLE", payload: e.target.value })}
                 className="border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent"
               >
                 <option value="member">Member</option>
