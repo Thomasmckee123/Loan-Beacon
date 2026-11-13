@@ -73,8 +73,8 @@ export default function Table<T>({
                       <td
                         key={col.id}
                         id={i === 0 && clickable ? labelId("d", row) : undefined}
-                        // White cell borders inset the dark hover fill into a rounded pill
-                        className={`px-5 py-2.5 align-middle border-y-4 border-white bg-white bg-clip-padding transition-colors duration-150 group-hover:bg-navy-800 group-focus-visible:bg-navy-800 ${alignClass(col.align)} ${
+                        // White cell borders inset the light hover fill into a rounded pill
+                        className={`px-5 py-2.5 align-middle border-y-4 border-white bg-white bg-clip-padding transition-colors duration-150 group-hover:bg-navy-100 group-focus-visible:bg-navy-100 ${alignClass(col.align)} ${
                           i === 0
                             ? `border-l-4 rounded-l-xl ${hasStripe && stripe ? stripe : ""}`
                             : ""
