@@ -10,48 +10,29 @@ export async function POST(request: Request) {
   const { token } = await request.json();
   if (!token) return NextResponse.json({ error: 'Token is required' }, { status: 400 });
 
-  // Look up the invite
-  const { data: invite, error: inviteError } = await supabase
-    .from('team_invites')
-    .select('*')
-    .eq('token', token)
-    .is('accepted_at', null)
-    .gt('expires_at', new Date().toISOString())
-    .single();
+  // Validate invite, add member and mark accepted atomically in the DB
+  // (security definer fn; invitees cannot update team_invites directly)
+  const { data: teamId, error } = await supabase.rpc("accept_team_invite", { p_token: token });
 
-  if (inviteError || !invite) {
-    return NextResponse.json({ error: 'Invalid or expired invite' }, { status: 404 });
-  }
-
-  // Verify email matches
-  if (invite.email !== user.email?.toLowerCase()) {
-    return NextResponse.json(
-      { error: 'This invite was sent to a different email address' },
-      { status: 403 }
-    );
-  }
-
-  // Add user to team
-  const { error: memberError } = await supabase
-    .from('team_members')
-    .insert({
-      team_id: invite.team_id,
-      user_id: user.id,
-      role: invite.role,
-    });
-
-  if (memberError) {
-    if (memberError.code === '23505') {
-      return NextResponse.json({ error: 'You are already a member of this team' }, { status: 409 });
+  if (error) {
+    if (error.code === "P0002" || error.code === "22P02") {
+      return NextResponse.json({ error: "Invalid or expired invite" }, { status: 404 });
     }
-    return NextResponse.json({ error: memberError.message }, { status: 500 });
+    if (error.code === "42501") {
+      return NextResponse.json({ error: error.message }, { status: 403 });
+    }
+    if (error.code === "PGRST202") {
+      // accept_team_invite missing: supabase/migration-fix-rls.sql not applied
+      return NextResponse.json(
+        { error: "Invite acceptance unavailable: database migration not applied" },
+        { status: 503 }
+      );
+    }
+    if (error.code === "23505") {
+      return NextResponse.json({ error: "You are already a member of this team" }, { status: 409 });
+    }
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Mark invite as accepted
-  await supabase
-    .from('team_invites')
-    .update({ accepted_at: new Date().toISOString() })
-    .eq('id', invite.id);
-
-  return NextResponse.json({ success: true, teamId: invite.team_id });
+  return NextResponse.json({ success: true, teamId });
 }

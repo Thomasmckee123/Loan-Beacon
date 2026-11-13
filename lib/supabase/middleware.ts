@@ -29,31 +29,32 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  // Use getSession() instead of getUser() to avoid a network request to Supabase
-  // on every single route. getSession() reads the JWT from cookies locally,
-  // which is sufficient for route protection in middleware.
+  // Validate the session with Supabase Auth (the local cookie decode alone
+  // would trust stale/revoked tokens). Do not run code between client
+  // creation and this call.
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { pathname } = request.nextUrl;
+
+  // Redirect helper that preserves any refreshed/cleared auth cookies
+  const redirectTo = (path: string) => {
+    const url = request.nextUrl.clone();
+    url.pathname = path;
+    const redirect = NextResponse.redirect(url);
+    supabaseResponse.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+    return redirect;
+  };
 
   // Protect dashboard routes - redirect to login if not authenticated
-  if (
-    !session &&
-    request.nextUrl.pathname.startsWith('/dashboard')
-  ) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    return NextResponse.redirect(url);
+  if (!user && pathname.startsWith("/dashboard")) {
+    return redirectTo("/login");
   }
 
-  // Redirect authenticated users away from login/register
-  if (
-    session &&
-    (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/register')
-  ) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
-    return NextResponse.redirect(url);
+  // Redirect authenticated users away from login/signup
+  if (user && (pathname === "/login" || pathname === "/signup")) {
+    return redirectTo("/dashboard");
   }
 
   return supabaseResponse;
