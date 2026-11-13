@@ -1,6 +1,10 @@
 "use client";
 
+import { KeyboardEvent, useId } from "react";
 import { TableProps } from "./TableProps";
+
+const alignClass = (align?: "left" | "right") =>
+  align === "right" ? "text-right tabular-nums" : "text-left";
 
 export default function Table<T>({
   columns,
@@ -10,76 +14,134 @@ export default function Table<T>({
   onRowClick,
   getRowBorderColor,
 }: TableProps<T>) {
+  const clickable = !!onRowClick;
+  const hasStripe = !!getRowBorderColor;
+  const idPrefix = useId();
+
+  // Id of the element whose text names a clickable row/card (its first cell)
+  const labelId = (view: "d" | "m", row: T) =>
+    `${idPrefix}-${view}-${rowKey(row).replace(/\s+/g, "_")}`;
+
+  // Enter/Space activates a focused clickable row (additive to mouse click)
+  const handleKeyDown = (e: KeyboardEvent<HTMLElement>, row: T) => {
+    if (!onRowClick) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onRowClick(row);
+    }
+  };
+
+  const focusClass = clickable
+    ? "cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-navy-600"
+    : "";
+
   return (
-    <div className="space-y-3">
-      {/* Desktop header - hidden on mobile */}
-      <div
-        className="hidden md:grid rounded-xl px-6 py-3 bg-navy-800 mb-1"
-        style={{
-          gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`,
-        }}
-      >
-        {columns.map((col) => (
-          <div
-            key={col.id}
-            className="text-xs font-medium text-white uppercase p-2 tracking-wider"
-          >
-            {col.header}
-          </div>
-        ))}
+    <>
+      {/* Tablet/desktop table (md and up) */}
+      <div className="hidden md:block rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+        <div className="max-h-[600px] overflow-auto">
+          <table className="w-full min-w-[720px] border-collapse text-sm">
+            <thead>
+              <tr>
+                {columns.map((col, i) => (
+                  <th
+                    key={col.id}
+                    scope="col"
+                    className={`sticky top-0 z-10 bg-navy-100 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-navy-800 border-b border-navy-200 ${alignClass(col.align)} ${
+                      i === 0 && hasStripe ? "border-l-4 border-l-transparent" : ""
+                    }`}
+                  >
+                    {col.header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {data.map((row) => {
+                const stripe = getRowBorderColor?.(row);
+                return (
+                  <tr
+                    key={rowKey(row)}
+                    onClick={() => onRowClick?.(row)}
+                    onKeyDown={(e) => handleKeyDown(e, row)}
+                    tabIndex={clickable ? 0 : undefined}
+                    aria-labelledby={clickable ? labelId("d", row) : undefined}
+                    className={`bg-white transition-colors duration-150 hover:bg-navy-100/60 ${
+                      clickable ? `focus-visible:bg-navy-100/60 ${focusClass}` : ""
+                    }`}
+                  >
+                    {columns.map((col, i) => (
+                      <td
+                        key={col.id}
+                        id={i === 0 && clickable ? labelId("d", row) : undefined}
+                        className={`px-5 py-3.5 align-middle ${alignClass(col.align)} ${
+                          i === 0 && hasStripe
+                            ? `border-l-4 ${stripe || "border-l-transparent"}`
+                            : ""
+                        }`}
+                      >
+                        {col.accessor(row)}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
+              {data.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={columns.length}
+                    className="px-5 py-12 text-center text-gray-600"
+                  >
+                    {emptyMessage}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div className="max-h-[600px] overflow-y-auto rounded-2xl p-3 space-y-3">
+      {/* Mobile cards (below md) */}
+      <div className="md:hidden max-h-[600px] overflow-y-auto space-y-3">
         {data.map((row) => {
-          const borderColor = getRowBorderColor?.(row);
+          const stripe = getRowBorderColor?.(row);
           return (
             <div
               key={rowKey(row)}
               onClick={() => onRowClick?.(row)}
-              className={onRowClick ? "cursor-pointer" : ""}
+              onKeyDown={(e) => handleKeyDown(e, row)}
+              tabIndex={clickable ? 0 : undefined}
+              role={clickable ? "link" : undefined}
+              aria-labelledby={clickable ? labelId("m", row) : undefined}
+              className={`rounded-xl border border-gray-200 bg-white shadow-sm p-4 space-y-3 transition-shadow duration-150 hover:shadow-md active:shadow-md ${focusClass} ${
+                stripe ? `border-l-4 ${stripe}` : ""
+              }`}
             >
-              {/* Desktop row */}
-              <div
-                className="hidden md:grid bg-white rounded-xl shadow-sm border border-gray-100 px-6 py-3 hover:shadow-md transition-all duration-200"
-                style={{
-                  gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`,
-                }}
-              >
-                {columns.map((col) => (
-                  <div key={col.id} className="flex items-center">
+              {columns.map((col, i) => (
+                <div
+                  key={col.id}
+                  className="flex items-center justify-between gap-3"
+                >
+                  <span className="text-xs font-medium text-gray-600 uppercase tracking-wider shrink-0">
+                    {col.header}
+                  </span>
+                  <div
+                    id={i === 0 && clickable ? labelId("m", row) : undefined}
+                    className="text-right"
+                  >
                     {col.accessor(row)}
                   </div>
-                ))}
-              </div>
-
-              {/* Mobile card */}
-              <div
-                className={`md:hidden bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-3 active:shadow-md hover:shadow-md transition-all duration-200 ${
-                  borderColor ? `border-l-4 ${borderColor}` : ""
-                }`}
-              >
-                {columns.map((col) => (
-                  <div
-                    key={col.id}
-                    className="flex items-center justify-between gap-3"
-                  >
-                    <span className="text-xs font-medium text-gray-400 uppercase tracking-wider shrink-0">
-                      {col.header}
-                    </span>
-                    <div className="text-right">{col.accessor(row)}</div>
-                  </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           );
         })}
+        {data.length === 0 && (
+          <div className="rounded-xl border border-gray-200 bg-white px-6 py-12 text-center text-gray-600">
+            {emptyMessage}
+          </div>
+        )}
       </div>
-
-      {data.length === 0 && (
-        <div className="bg-white rounded-xl shadow-md px-6 py-12 text-center">
-          <p className="text-gray-500">{emptyMessage}</p>
-        </div>
-      )}
-    </div>
+    </>
   );
 }
