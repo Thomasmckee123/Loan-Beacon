@@ -16,7 +16,6 @@ import {
   filterLoans,
   containerVariants,
   itemVariants,
-  statusBorderColors,
 } from "./utils";
 import { Button } from "@/app/components/Buttons";
 import Loan from "./components/Loan";
@@ -150,9 +149,6 @@ export default function LoansPage() {
           router.push(`/dashboard/companies/${row.companyId}`)
         }
         emptyMessage="No loans found matching your criteria."
-        getRowBorderColor={(row) =>
-          statusBorderColors[row.computedStatus] ?? "border-l-gray-300"
-        }
       />
     </motion.div>
   );
