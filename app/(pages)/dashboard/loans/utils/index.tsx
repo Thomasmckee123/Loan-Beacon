@@ -146,10 +146,3 @@ export const itemVariants = {
     transition: { duration: 0.4 },
   },
 };
-
-export const statusBorderColors: Record<string, string> = {
-  Active: "border-l-green-500",
-  Upcoming: "border-l-navy-500",
-  "Maturing Soon": "border-l-orange-500",
-  Matured: "border-l-red-500",
-};

@@ -40,23 +40,24 @@ export default function Table<T>({
       {/* Tablet/desktop table (md and up) */}
       <div className="hidden md:block rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
         <div className="max-h-[600px] overflow-auto">
-          <table className="w-full min-w-[720px] border-collapse text-sm">
+          {/* border-separate so rounded first/last cells render the hover pill */}
+          <table className="w-full min-w-[720px] border-separate border-spacing-0 text-sm">
             <thead>
               <tr>
                 {columns.map((col, i) => (
                   <th
                     key={col.id}
                     scope="col"
-                    className={`sticky top-0 z-10 bg-navy-100 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-navy-800 border-b border-navy-200 ${alignClass(col.align)} ${
-                      i === 0 && hasStripe ? "border-l-4 border-l-transparent" : ""
-                    }`}
+                    className={`sticky top-0 z-10 bg-navy-800 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-white border-navy-800 ${alignClass(col.align)} ${
+                      i === 0 ? "border-l-4" : ""
+                    } ${i === columns.length - 1 ? "border-r-4" : ""}`}
                   >
                     {col.header}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody>
               {data.map((row) => {
                 const stripe = getRowBorderColor?.(row);
                 return (
@@ -66,19 +67,18 @@ export default function Table<T>({
                     onKeyDown={(e) => handleKeyDown(e, row)}
                     tabIndex={clickable ? 0 : undefined}
                     aria-labelledby={clickable ? labelId("d", row) : undefined}
-                    className={`bg-white transition-colors duration-150 hover:bg-navy-100/60 ${
-                      clickable ? `focus-visible:bg-navy-100/60 ${focusClass}` : ""
-                    }`}
+                    className={`group ${focusClass}`}
                   >
                     {columns.map((col, i) => (
                       <td
                         key={col.id}
                         id={i === 0 && clickable ? labelId("d", row) : undefined}
-                        className={`px-5 py-3.5 align-middle ${alignClass(col.align)} ${
-                          i === 0 && hasStripe
-                            ? `border-l-4 ${stripe || "border-l-transparent"}`
+                        // White cell borders inset the dark hover fill into a rounded pill
+                        className={`px-5 py-2.5 align-middle border-y-4 border-white bg-white bg-clip-padding transition-colors duration-150 group-hover:bg-navy-800 group-focus-visible:bg-navy-800 ${alignClass(col.align)} ${
+                          i === 0
+                            ? `border-l-4 rounded-l-xl ${hasStripe && stripe ? stripe : ""}`
                             : ""
-                        }`}
+                        } ${i === columns.length - 1 ? "border-r-4 rounded-r-xl" : ""}`}
                       >
                         {col.accessor(row)}
                       </td>
