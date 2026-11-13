@@ -57,7 +57,10 @@ export default function TeamPage() {
       const data = await res.json();
       dispatch({ type: "SET_TEAMS", payload: data });
       if (data.length > 0 && !currentTeamId) {
-        dispatch({ type: "SET_CURRENT_TEAM", payload: { teamId: data[0].team_id, role: data[0].role } });
+        dispatch({
+          type: "SET_CURRENT_TEAM",
+          payload: { teamId: data[0].team_id, role: data[0].role },
+        });
       }
     }
     dispatch({ type: "SET_LOADING", payload: false });
@@ -85,7 +88,8 @@ export default function TeamPage() {
     fetchTeams();
     const supabase = createClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user?.id) dispatch({ type: "SET_CURRENT_USER_ID", payload: session.user.id });
+      if (session?.user?.id)
+        dispatch({ type: "SET_CURRENT_USER_ID", payload: session.user.id });
     });
   }, [fetchTeams]);
 
@@ -115,7 +119,10 @@ export default function TeamPage() {
       const team = await res.json();
       showSnackbar("Team created!");
       dispatch({ type: "RESET_CREATE_FORM" });
-      dispatch({ type: "SET_CURRENT_TEAM", payload: { teamId: team.id, role: "owner" } });
+      dispatch({
+        type: "SET_CURRENT_TEAM",
+        payload: { teamId: team.id, role: "owner" },
+      });
       await fetchTeams();
     } else {
       const err = await res.json();
@@ -223,7 +230,12 @@ export default function TeamPage() {
                 type="text"
                 placeholder="e.g. Advisory Group"
                 value={newTeamName}
-                onChange={(e) => dispatch({ type: "SET_NEW_TEAM_NAME", payload: e.target.value })}
+                onChange={(e) =>
+                  dispatch({
+                    type: "SET_NEW_TEAM_NAME",
+                    payload: e.target.value,
+                  })
+                }
                 required
                 className="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent"
               />
@@ -235,7 +247,12 @@ export default function TeamPage() {
                 </label>
                 <select
                   value={newTeamPlan}
-                  onChange={(e) => dispatch({ type: "SET_NEW_TEAM_PLAN", payload: e.target.value })}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "SET_NEW_TEAM_PLAN",
+                      payload: e.target.value,
+                    })
+                  }
                   className="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent bg-white"
                 >
                   <option value="free">Free</option>
@@ -252,7 +269,12 @@ export default function TeamPage() {
                   type="number"
                   min="1"
                   value={newTeamMaxUsers}
-                  onChange={(e) => dispatch({ type: "SET_NEW_TEAM_MAX_USERS", payload: e.target.value })}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "SET_NEW_TEAM_MAX_USERS",
+                      payload: e.target.value,
+                    })
+                  }
                   required
                   className="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent"
                 />
@@ -284,7 +306,12 @@ export default function TeamPage() {
           {teams.map((t) => (
             <button
               key={t.team_id}
-              onClick={() => dispatch({ type: "SET_CURRENT_TEAM", payload: { teamId: t.team_id, role: t.role } })}
+              onClick={() =>
+                dispatch({
+                  type: "SET_CURRENT_TEAM",
+                  payload: { teamId: t.team_id, role: t.role },
+                })
+              }
               className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-200 ${
                 currentTeamId === t.team_id
                   ? "bg-navy-800 text-white shadow-sm"
@@ -310,7 +337,9 @@ export default function TeamPage() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-lg shadow-lg p-6"
         >
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">Create New Team</h3>
+          <h3 className="text-sm font-semibold text-gray-700 mb-4">
+            Create New Team
+          </h3>
           <form onSubmit={handleCreateTeam} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
@@ -320,7 +349,12 @@ export default function TeamPage() {
                 type="text"
                 placeholder="e.g. Advisory Group"
                 value={newTeamName}
-                onChange={(e) => dispatch({ type: "SET_NEW_TEAM_NAME", payload: e.target.value })}
+                onChange={(e) =>
+                  dispatch({
+                    type: "SET_NEW_TEAM_NAME",
+                    payload: e.target.value,
+                  })
+                }
                 required
                 className="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent"
               />
@@ -332,7 +366,12 @@ export default function TeamPage() {
                 </label>
                 <select
                   value={newTeamPlan}
-                  onChange={(e) => dispatch({ type: "SET_NEW_TEAM_PLAN", payload: e.target.value })}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "SET_NEW_TEAM_PLAN",
+                      payload: e.target.value,
+                    })
+                  }
                   className="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent bg-white"
                 >
                   <option value="free">Free</option>
@@ -349,7 +388,12 @@ export default function TeamPage() {
                   type="number"
                   min="1"
                   value={newTeamMaxUsers}
-                  onChange={(e) => dispatch({ type: "SET_NEW_TEAM_MAX_USERS", payload: e.target.value })}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "SET_NEW_TEAM_MAX_USERS",
+                      payload: e.target.value,
+                    })
+                  }
                   required
                   className="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent"
                 />
@@ -388,8 +432,7 @@ export default function TeamPage() {
                   {currentTeam?.teams.name}
                 </h1>
                 <p className="text-sm text-gray-500">
-                  {members.length}{" "}
-                  {members.length === 1 ? "member" : "members"}{" "}
+                  {members.length} {members.length === 1 ? "member" : "members"}{" "}
                   {invites.length > 0 &&
                     `· ${invites.length} pending invite${invites.length > 1 ? "s" : ""}`}
                 </p>
@@ -515,13 +558,20 @@ export default function TeamPage() {
                 type="email"
                 placeholder="colleague@company.com"
                 value={inviteEmail}
-                onChange={(e) => dispatch({ type: "SET_INVITE_EMAIL", payload: e.target.value })}
+                onChange={(e) =>
+                  dispatch({
+                    type: "SET_INVITE_EMAIL",
+                    payload: e.target.value,
+                  })
+                }
                 required
                 className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent"
               />
               <select
                 value={inviteRole}
-                onChange={(e) => dispatch({ type: "SET_INVITE_ROLE", payload: e.target.value })}
+                onChange={(e) =>
+                  dispatch({ type: "SET_INVITE_ROLE", payload: e.target.value })
+                }
                 className="border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent"
               >
                 <option value="member">Member</option>
